@@ -28,7 +28,7 @@ public class Shooter extends SubsystemBase
     /**
      * Example command factory method.
      *
-     * @return a command
+     * @return The autonomous command
      */
     public Command exampleMethodCommand()
     {
