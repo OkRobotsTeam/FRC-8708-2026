@@ -3,6 +3,7 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
     id "idea"
+    id "com.peterabeles.gversion" version "1.10"
 }
 
 def javaVersion = JavaVersion.VERSION_17
@@ -55,9 +56,14 @@ wpi.java.debugJni = false
 def includeDesktopSupport = false
 
 dependencies {
-    annotationProcessor wpi.java.deps.wpilibAnnotations()
+
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor wpi.java.deps.wpilibAnnotations()
+    annotationProcessor "org.littletonrobotics.akit:akit-autolog:26.0.0"
+
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -107,6 +113,16 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     // Configure string concat to always inline compile
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+
+project.compileJava.dependsOn(createVersionFile)
+gversion {
+    srcDir       = "src/main/java/"
+    classPackage = "frc.robot"
+    className    = "BuildConstants"
+    dateFormat   = "yyyy-MM-dd HH:mm:ss z"
+    timeZone     = "America/New_York" // Use preferred time zone
+    indent       = "  "
 }
 
 

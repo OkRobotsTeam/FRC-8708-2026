@@ -16,6 +16,7 @@
 package frc.robot.subsystems.Drive;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -98,12 +99,13 @@ public class ModuleIOTalonFX implements ModuleIO {
     public ModuleIOTalonFX(
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
     {
+        CANBus rio = new CANBus("");
         this.constants = constants;
         driveTalon =
-            new TalonFX(constants.DriveMotorId, DriveConstants.drivetrainConstants.CANBusName);
+            new TalonFX(constants.DriveMotorId, rio);
         turnTalon =
-            new TalonFX(constants.SteerMotorId, DriveConstants.drivetrainConstants.CANBusName);
-        cancoder = new CANcoder(constants.EncoderId, DriveConstants.drivetrainConstants.CANBusName);
+            new TalonFX(constants.SteerMotorId, rio);
+        cancoder = new CANcoder(constants.EncoderId, rio);
 
         // Configure drive motor
         var driveConfig = constants.DriveMotorInitialConfigs;

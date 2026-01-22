@@ -59,11 +59,7 @@ import frc.robot.commands.AlignToPose;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.OnTheFlyPathCommand;
-import frc.robot.commands.autos.BranchingAuto;
-import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
-import frc.robot.commands.autos.WheelCharacterizationAuto;
-import frc.robot.commands.autos.WheelSlipAuto;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.DriveConstants;
 import frc.robot.subsystems.Drive.GyroIO;
@@ -128,17 +124,10 @@ public class RobotContainer {
 
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("ExampleAuto", new ExampleAuto(drive));
-        autoChooser.addOption("BranchingAuto",
-            new BranchingAuto(drive, () -> conditionalChooser.get()));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
         });
-
-        autoChooser.addOption("Drive Wheel Radius Characterization",
-            new WheelCharacterizationAuto(drive));
-
-        autoChooser.addOption("Wheel Slip Characterization", new WheelSlipAuto(drive));
 
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
             robotState.getEstimatedPose().getTranslation(),

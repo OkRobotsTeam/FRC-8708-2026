@@ -86,6 +86,7 @@ public class DriveCommands {
                     getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
                         ySupplier.getAsDouble());
 
+                System.out.println("Moving linearVelocity: " + linearVelocity);
                 // Apply rotation deadband
                 double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
