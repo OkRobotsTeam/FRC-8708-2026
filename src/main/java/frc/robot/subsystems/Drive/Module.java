@@ -59,7 +59,6 @@ public class Module {
     {
         io.updateInputs(inputs);
         Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
-
         // Calculate positions for odometry
         int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
         odometryPositions = new SwerveModulePosition[sampleCount];
@@ -87,6 +86,9 @@ public class Module {
         // Apply setpoints
         io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius);
         io.setTurnPosition(state.angle);
+        Logger.recordOutput("Drive/Module" + index + "/speedMetersPerSecond", state.speedMetersPerSecond);
+        Logger.recordOutput("Drive/Module" + index + "/angle", state.angle);
+
     }
 
     /**
@@ -157,5 +159,10 @@ public class Module {
     public double getFFCharacterizationVelocity()
     {
         return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
+    }
+
+    public void test() {
+        io.setDriveVelocity(5.0);
+        System.out.println("Setting drive velocity to 5");
     }
 }

@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -123,7 +124,6 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
         autoChooser.addDefaultOption("None", new NoneAuto());
-        autoChooser.addOption("ExampleAuto", new ExampleAuto(drive));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
@@ -158,6 +158,10 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
+
+//        controller.b().whileTrue(
+//                Commands.runOnce(drive::test)
+//        );
         // Lock to 0° when A button is held
         controller
             .a()

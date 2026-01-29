@@ -34,6 +34,7 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
+import frc.robot.subsystems.Drive.DriveConstants;
 
 /**
  * Abstraction for a CTRE TalonFX motor implementing the {@link MotorIO} interface. Wraps motor
@@ -85,7 +86,7 @@ public class MotorIOTalonFX implements MotorIO {
         TalonFXFollower... followerData)
     {
 
-        motor = new TalonFX(main.id(), main.bus());
+        motor = new TalonFX(main.id(), DriveConstants.kCANBus);
 
         // Initialize lists
         followerOnWrongBusAlert = new Alert[followerData.length];
@@ -101,7 +102,7 @@ public class MotorIOTalonFX implements MotorIO {
                 followerOnWrongBusAlert[i].set(true);
             }
 
-            followers[i] = new TalonFX(id.id(), id.bus());
+            followers[i] = new TalonFX(id.id(), DriveConstants.kCANBus);
 
             TalonFX follower = followers[i];
         }

@@ -21,6 +21,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.Device;
+import frc.robot.subsystems.Drive.DriveConstants;
 import lombok.Getter;
 
 public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
@@ -37,7 +38,7 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
         CANcoderConfiguration configuration)
     {
         this.name = name;
-        CANCoder = new CANcoder(id.id(), id.bus());
+        CANCoder = new CANcoder(id.id(), DriveConstants.kCANBus);
 
 
         angle = CANCoder.getAbsolutePosition();

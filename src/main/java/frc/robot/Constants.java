@@ -61,7 +61,7 @@ public final class Constants {
                 // Roborio id recognition
                 serial = System.getenv("serialnum");
             } else {
-                serial = "3467";
+                serial = "8708";
             }
             RobotConstants.isComp = serial.startsWith(RobotConstants.compSerial);
             RobotConstants.isAlpha = serial.startsWith(RobotConstants.alphaSerial);

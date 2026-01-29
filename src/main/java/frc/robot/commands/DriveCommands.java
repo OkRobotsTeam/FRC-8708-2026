@@ -81,12 +81,13 @@ public class DriveCommands {
         RobotState robotState = RobotState.getInstance();
         return Commands.run(
             () -> {
+//                System.out.println("joystickDrive: " + xSupplier.getAsDouble() + " " + ySupplier.getAsDouble() + " " + omegaSupplier.getAsDouble());
                 // Get linear velocity
                 Translation2d linearVelocity =
                     getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
                         ySupplier.getAsDouble());
 
-                System.out.println("Moving linearVelocity: " + linearVelocity);
+                //System.out.println("Moving linearVelocity: " + linearVelocity);
                 // Apply rotation deadband
                 double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
@@ -107,6 +108,7 @@ public class DriveCommands {
                             ? robotState.getEstimatedPose().getRotation()
                                 .plus(new Rotation2d(Math.PI))
                             : robotState.getEstimatedPose().getRotation()));
+                //drive.test();
             },
             drive)
             .withName("Joystick Drive");

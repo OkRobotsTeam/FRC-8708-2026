@@ -60,7 +60,7 @@ public class Drive extends SubsystemBase {
 
     // TunerConstants doesn't include these constants, so they are declared locally
     static final double ODOMETRY_FREQUENCY =
-        new CANBus(DriveConstants.drivetrainConstants.CANBusName).isNetworkFD()
+        new CANBus(DriveConstants.DrivetrainConstants.CANBusName).isNetworkFD()
             ? 250.0
             : 100.0;
     public static final double DRIVE_BASE_RADIUS = Math.max(
@@ -367,5 +367,12 @@ public class Drive extends SubsystemBase {
     /** Returns the acceleration of the gyro in the Y direction. */
     public double getAccelerationY() {
         return gyroIO.getAccelerationY();
+    }
+
+    public void test() {
+        for (int i = 0; i < 4; i++) {
+            modules[i].test();
+            System.out.println("testing module" + i);
+        }
     }
 }

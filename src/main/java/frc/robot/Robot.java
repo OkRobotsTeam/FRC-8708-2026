@@ -125,7 +125,7 @@ public class Robot extends LoggedRobot {
          * pathfinding command to warm up the library. Source: PathPlanner Docs
          */
         // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
-        PathfindingCommand.warmupCommand().schedule();
+        CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
 
         // Log first 8 character of robot serial
         Logger.recordOutput("Robot Serial",
@@ -177,7 +177,7 @@ public class Robot extends LoggedRobot {
 
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
-            autonomousCommand.schedule();
+            CommandScheduler.getInstance().schedule(autonomousCommand);
         }
     }
 
