@@ -163,6 +163,7 @@ public class Module {
 
     public void test() {
         io.setDriveVelocity(5.0);
+        io.setTurnPosition(Rotation2d.fromDegrees(45));
         System.out.println("Setting drive velocity to 5");
     }
 }

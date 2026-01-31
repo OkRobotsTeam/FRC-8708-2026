@@ -31,6 +31,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -121,10 +122,12 @@ public class RobotContainer {
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
+
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
         autoChooser.addDefaultOption("None", new NoneAuto());
 
+        autoChooser.addOption("test", new NoneAuto());
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
         });
@@ -140,6 +143,8 @@ public class RobotContainer {
             new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
 
 
+        // Detect if controllers are missing / Stop multiple warnings
+        DriverStation.silenceJoystickConnectionWarning(true);
     }
 
     /**
@@ -157,6 +162,12 @@ public class RobotContainer {
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
+
+
+            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(0).test()));
+            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(1).test()));
+            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(2).test()));
+            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(3).test()));
 
 
 //        controller.b().whileTrue(

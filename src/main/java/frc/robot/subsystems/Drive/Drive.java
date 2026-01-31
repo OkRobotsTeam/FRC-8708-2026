@@ -369,6 +369,10 @@ public class Drive extends SubsystemBase {
         return gyroIO.getAccelerationY();
     }
 
+    public Module getModule(int moduleNumber) {
+        return modules[moduleNumber];
+    }
+
     public void test() {
         for (int i = 0; i < 4; i++) {
             modules[i].test();
