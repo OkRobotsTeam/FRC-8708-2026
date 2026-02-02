@@ -98,7 +98,6 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
 
@@ -308,5 +307,26 @@ public class RobotContainer {
                     + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees) + " degrees",
                 false);
         }
+    }
+
+    public void init() {
+    }
+
+    public void teleopInit() {
+    }
+
+    public void autonomousInit() {
+    }
+
+    public void testInit() {
+    }
+
+    public void periodic() {
+    }
+
+    public void teleopPeriodic() {
+    }
+
+    public void testPeriodic() {
     }
 }

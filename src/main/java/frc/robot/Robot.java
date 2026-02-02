@@ -18,19 +18,33 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Drive.DriveConstants;
 import frc.robot.util.BallSimulator;
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -43,6 +57,13 @@ public class Robot extends LoggedRobot {
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
+    private Command lastAutonomousCommand;
+    private List<Pose2d> pathsToShow = new ArrayList<Pose2d>();
+    private Field2d autoTraj = new Field2d();
+    public static final double fieldLength = Units.inchesToMeters(690.876);
+    public static final double fieldWidth = Units.inchesToMeters(317);
+    public static final Translation2d fieldCenter = new Translation2d(fieldLength / 2, fieldWidth / 2);
+
 
     public Robot()
     {
@@ -150,21 +171,74 @@ public class Robot extends LoggedRobot {
 
         // Return to non-RT thread priority (do not modify the first argument)
         // Threads.setCurrentThreadPriority(false, 10);
+        SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
 
         BallSimulator.update();
         RobotState.getInstance().publishMechanismPoses();
+
+        robotContainer.periodic();
     }
 
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit()
-    {}
+    {
+        robotContainer.init();
+    }
 
     /** This function is called periodically when disabled. */
     @Override
     public void disabledPeriodic()
     {
         robotContainer.checkStartPose();
+
+
+
+        var alliance = DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+        // Get currently selected command
+        autonomousCommand = robotContainer.getAutonomousCommand();
+        // Check if is the same as the last one
+        if (autonomousCommand != lastAutonomousCommand && autonomousCommand != null) {
+            // Check if its contained in the list of our autos
+            if (AutoBuilder.getAllAutoNames().contains(autonomousCommand.getName())) {
+                // Clear the current path
+                pathsToShow.clear();
+                // Grabs all paths from the auto
+                try {
+                    for (PathPlannerPath path : PathPlannerAuto
+                            .getPathGroupFromAutoFile(autonomousCommand.getName())) {
+                        // Adds all poses to master list
+                        pathsToShow.addAll(path.getPathPoses());
+                    }
+                } catch (IOException | ParseException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                // Check to see which alliance we are on Red Alliance
+                if (alliance) {
+                    for (int i = 0; i < pathsToShow.size(); i++) {
+                        pathsToShow.set(i,
+                                pathsToShow.get(i).rotateAround(fieldCenter, Rotation2d.k180deg));
+                    }
+                }
+                // Displays all poses on Field2d widget
+                autoTraj.getObject("traj").setPoses(pathsToShow);
+            }
+        }
+        lastAutonomousCommand = autonomousCommand;
+
+        if (!pathsToShow.isEmpty()) {
+            var firstPose = pathsToShow.get(0);
+            Logger.recordOutput("Alignment/StartPose", firstPose);
+            SmartDashboard.putBoolean("Alignment/Translation",
+                    firstPose.getTranslation().getDistance(
+                            robotContainer.drive.getPose().getTranslation()) <= Units
+                            .inchesToMeters(1.5));
+            SmartDashboard.putBoolean("Alignment/Rotation",
+                    firstPose.getRotation().minus(robotContainer.drive.getPose().getRotation())
+                            .getDegrees() < 1);
+        }
     }
 
     /**
@@ -173,6 +247,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
+        robotContainer.init();
+        robotContainer.autonomousInit();
         autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
@@ -180,6 +256,7 @@ public class Robot extends LoggedRobot {
             CommandScheduler.getInstance().schedule(autonomousCommand);
         }
     }
+
 
     /** This function is called periodically during autonomous. */
     @Override
@@ -192,6 +269,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopInit()
     {
+        robotContainer.init();
+        robotContainer.teleopInit();
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -204,12 +283,15 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic()
-    {}
+    {
+        robotContainer.teleopPeriodic();
+    }
 
     /** This function is called once when test mode is enabled. */
     @Override
     public void testInit()
     {
+        robotContainer.testInit();
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
     }
@@ -217,7 +299,9 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic()
-    {}
+    {
+        robotContainer.testPeriodic();
+    }
 
     /** This function is called once when the robot is first started up. */
     @Override
