@@ -16,6 +16,9 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MatBuilder;
@@ -35,6 +38,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -102,7 +106,7 @@ public class RobotContainer {
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
 
     // Dashboard inputs
-    private final LoggedDashboardChooser<AutoCommand> autoChooser;
+    private final SendableChooser<Command> autoChooser;
     private final LoggedDashboardChooser<Boolean> conditionalChooser;
     public static Field2d autoPreviewField = new Field2d();
 
@@ -113,22 +117,46 @@ public class RobotContainer {
      */
     public RobotContainer()
     {
+        RobotConfig config = null;
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
         drive = DriveConstants.get();
+
+        AutoBuilder.configure(
+                RobotState.getInstance()::getEstimatedPose, // Robot pose supplier
+                RobotState.getInstance()::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+                RobotState.getInstance()::getVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                drive::pathPlannerDrive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                        new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                ), config, () -> {
+                    var alliance = DriverStation.getAlliance();
+                    return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
+                },
+                drive // Reference to this subsystem to set requirements
+        );
+
 
         conditionalChooser = new LoggedDashboardChooser<>("Conditional Choice");
         conditionalChooser.addOption("True", true);
         conditionalChooser.addOption("False", false);
 
         // Set up auto routines
-        autoChooser = new LoggedDashboardChooser<>("Auto Choices");
+        autoChooser = AutoBuilder.buildAutoChooser();
 
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
-        autoChooser.addDefaultOption("None", new NoneAuto());
+        autoChooser.setDefaultOption("None", new NoneAuto());
 
         autoChooser.addOption("test", new NoneAuto());
+
         autoChooser.onChange(auto -> {
-            autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
+//            autoPreviewField.getObject("path").setPoses(auto.());
         });
 
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
@@ -263,7 +291,7 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand()
     {
-        return autoChooser.get();
+        return autoChooser.getSelected();
     }
 
     /** This function is called periodically by Robot.java when disabled. */

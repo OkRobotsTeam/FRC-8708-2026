@@ -24,6 +24,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -213,6 +214,10 @@ public class Drive extends SubsystemBase {
      *
      * @param speeds Speeds in meters/sec
      */
+    public void pathPlannerDrive(ChassisSpeeds speeds, DriveFeedforwards feedForwards) {
+        runVelocity(speeds);
+    }
+
     public void runVelocity(ChassisSpeeds speeds)
     {
         // Calculate module setpoints

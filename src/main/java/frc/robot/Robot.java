@@ -233,10 +233,10 @@ public class Robot extends LoggedRobot {
             Logger.recordOutput("Alignment/StartPose", firstPose);
             SmartDashboard.putBoolean("Alignment/Translation",
                     firstPose.getTranslation().getDistance(
-                            robotContainer.drive.getPose().getTranslation()) <= Units
+                            RobotState.getInstance().getEstimatedPose().getTranslation()) <= Units
                             .inchesToMeters(1.5));
             SmartDashboard.putBoolean("Alignment/Rotation",
-                    firstPose.getRotation().minus(robotContainer.drive.getPose().getRotation())
+                    firstPose.getRotation().minus(RobotState.getInstance().getEstimatedPose().getRotation())
                             .getDegrees() < 1);
         }
     }
