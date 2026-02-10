@@ -16,9 +16,11 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MatBuilder;
@@ -82,9 +84,16 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Volts;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Transfer;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.Logger;
 import java.util.function.Supplier;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
@@ -102,11 +111,15 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
+
+    Shooter shooter = new Shooter();
+    Transfer transfer = new Transfer();
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
 
     // Dashboard inputs
-    private final SendableChooser<Command> autoChooser;
+
+    private final LoggedDashboardChooser<PathPlannerAuto> autoChooser;
     private final LoggedDashboardChooser<Boolean> conditionalChooser;
     public static Field2d autoPreviewField = new Field2d();
 
@@ -147,16 +160,36 @@ public class RobotContainer {
         conditionalChooser.addOption("False", false);
 
         // Set up auto routines
-        autoChooser = AutoBuilder.buildAutoChooser();
+        autoChooser = new LoggedDashboardChooser<PathPlannerAuto>("Auto Choices");
 
+        for (String autoName : (AutoBuilder.getAllAutoNames())) {
+            PathPlannerAuto autoCommand = (PathPlannerAuto) AutoBuilder.buildAuto(autoName);
+            autoChooser.addOption(autoName, autoCommand);
+        }
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
-        autoChooser.setDefaultOption("None", new NoneAuto());
+        autoChooser.addDefaultOption("None", new NoneAuto());
 
         autoChooser.addOption("test", new NoneAuto());
 
         autoChooser.onChange(auto -> {
-//            autoPreviewField.getObject("path").setPoses(auto.());
+            try {
+                List<PathPlannerPath> path = PathPlannerAuto.getPathGroupFromAutoFile(auto.getName());
+                ArrayList<Pose2d> poses = new ArrayList<>();
+                for (PathPlannerPath pathPart : path) {
+                    poses.addAll(pathPart.getPathPoses());
+                }
+                System.out.println("Previewing path: " + auto.getName() +  " Num Poses:" + poses.size());
+                autoPreviewField.getObject("path").setPoses(poses);
+            } catch (Exception e) {
+                System.out.println("Couldn't get path group for auto: " + auto.getName());
+                autoPreviewField.getObject("path").setPoses();
+
+                //throw new RuntimeException(e);
+            }
+
+// Display the path on the dashboard field widget
+            //autoPreviewField.getObject("path").setPoses(auto.());
         });
 
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
@@ -190,11 +223,22 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
+//
+//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(0).test()));
+//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(1).test()));
+//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(2).test()));
+//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(3).test()));
 
-            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(0).test()));
-            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(1).test()));
-            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(2).test()));
-            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(3).test()));
+            controller.rightBumper().onTrue(Commands.runOnce((shooter::topFaster),shooter));
+            controller.leftBumper().onTrue(Commands.runOnce((shooter::topSlower),shooter));
+            controller.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster),shooter));
+            controller.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower),shooter));
+            //controller.x().onTrue(Commands.runOnce(topShooter::stop,topShooter).andThen(Commands.runOnce(bottomShooter::stop,bottomShooter)));
+            controller.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
+            controller.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
+            controller.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+            controller.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
+            controller.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
 
 
 //        controller.b().whileTrue(
@@ -291,7 +335,7 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand()
     {
-        return autoChooser.getSelected();
+        return autoChooser.get();
     }
 
     /** This function is called periodically by Robot.java when disabled. */
