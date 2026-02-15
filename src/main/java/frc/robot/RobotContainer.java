@@ -90,6 +90,7 @@ public class RobotContainer {
     private final LoggedDashboardChooser<PathPlannerAuto> autoChooser;
     private final LoggedDashboardChooser<Boolean> conditionalChooser;
     public static Field2d autoPreviewField = new Field2d();
+    public static Field2d currentPoseField = new Field2d();
 
     private final Trigger inAllianceRegionTrigger;
 
@@ -158,6 +159,8 @@ public class RobotContainer {
 // Display the path on the dashboard field widget
             //autoPreviewField.getObject("path").setPoses(auto.());
         });
+
+        SmartDashboard.putData("Current Pose", currentPoseField);
 
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
                 robotState.getEstimatedPose().getTranslation(),
@@ -359,6 +362,8 @@ public class RobotContainer {
     }
 
     public void periodic() {
+        currentPoseField.setRobotPose(robotState.getEstimatedPose());
+        currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation());
     }
 
     public void teleopPeriodic() {

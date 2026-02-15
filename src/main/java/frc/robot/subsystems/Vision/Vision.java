@@ -1,15 +1,19 @@
 package frc.robot.subsystems.Vision;
 
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.util.LimelightHelpers;
 import frc.robot.RobotState;
+import lombok.Getter;
 
 public class Vision extends SubsystemBase {
 
     private final RobotState robotState;
 
+    @Getter
+    private Pose2d lastVisionObservation;
 
     public Vision(RobotState robotState) {
         this.robotState = robotState;
@@ -31,6 +35,12 @@ public class Vision extends SubsystemBase {
 
         // Get the pose estimate
         LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+
+        if (limelightMeasurement.pose.equals(Pose2d.kZero)) {
+            return;
+        }
+
+        this.lastVisionObservation = limelightMeasurement.pose;
 
         // Add it to your pose estimator
         this.robotState.addVisionObservation(
