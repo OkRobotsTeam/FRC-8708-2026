@@ -230,9 +230,13 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
         // Send setpoints to modules
+        double average = 0;
         for (int i = 0; i < 4; i++) {
             modules[i].runSetpoint(setpointStates[i]);
+            average += setpointStates[i].speedMetersPerSecond;
         }
+        average = average/4.0;
+        Logger.recordOutput("SwerveSpeed/TargetSpeed",average );
 
         // Log optimized setpoints (runSetpoint mutates each state)
         Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);

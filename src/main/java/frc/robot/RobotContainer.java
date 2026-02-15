@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.commands.AlignToPoseBase;
 import frc.lib.commands.SteppableCommandGroup;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.LoggedTunableNumber;
@@ -54,12 +55,11 @@ import frc.lib.util.PointInPolygon;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.GamePieceVisualizer;
 import frc.robot.Constants.PathConstants;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.DriveToPose;
-import frc.robot.commands.OnTheFlyPathCommand;
+import frc.robot.commands.*;
 import frc.robot.commands.autos.NoneAuto;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.DriveConstants;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Vision.Vision;
 import frc.robot.util.BallSimulator;
 
@@ -92,6 +92,7 @@ public class RobotContainer {
 
     Shooter shooter = new Shooter();
     Transfer transfer = new Transfer();
+    Intake intake = new Intake();
 
     private final Vision vision = new Vision(this.robotState);
     // Controller
@@ -120,7 +121,7 @@ public class RobotContainer {
         }
         drive = DriveConstants.get();
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0));
-        PathPlannerLogging.setLogActivePathCallback(poses -> logStupidThingThatWOntLog(poses,trajectoryConfig));
+//        PathPlannerLogging.setLogActivePathCallback(poses -> logStupidThingThatWOntLog(poses,trajectoryConfig));
         PathPlannerLogging.setLogCurrentPoseCallback(pose -> Logger.recordOutput("PathPlanner/CurrentPose", pose));
         PathPlannerLogging.setLogTargetPoseCallback(pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
 
@@ -201,12 +202,12 @@ public class RobotContainer {
      * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
 
-    private void logStupidThingThatWOntLog(List<Pose2d> poses, TrajectoryConfig config)  {
-        if (poses.size() > 1)  {
-            Logger.recordOutput("PathPlanner/ActivePath", TrajectoryGenerator.generateTrajectory(poses,config));
-
-        }
-    }
+//    private void logStupidThingThatWOntLog(List<Pose2d> poses, TrajectoryConfig config)  {
+//        if (poses.size() > 1)  {
+//            Logger.recordOutput("PathPlanner/ActivePath", TrajectoryGenerator.generateTrajectory(poses,config));
+//
+//        }
+//    }
 
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
@@ -217,41 +218,45 @@ public class RobotContainer {
                         () -> -controller.getLeftX(),
                         () -> -controller.getRightX()));
 
-//
-//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(0).test()));
-//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(1).test()));
-//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(2).test()));
-//            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(3).test()));
 
         controller.rightBumper().onTrue(Commands.runOnce((shooter::topFaster), shooter));
         controller.leftBumper().onTrue(Commands.runOnce((shooter::topSlower), shooter));
         controller.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster), shooter));
         controller.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower), shooter));
-        //controller.x().onTrue(Commands.runOnce(topShooter::stop,topShooter).andThen(Commands.runOnce(bottomShooter::stop,bottomShooter)));
         controller.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
         controller.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
         controller.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
         controller.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
         controller.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+        controller.x().onTrue(Commands.runOnce(intake::run, intake));
+        controller.x().onFalse(Commands.runOnce(intake::stop, intake));
+        controller.povUp().onTrue(Commands.runOnce(intake::faster, intake));
+        controller.povDown().onTrue(Commands.runOnce(intake::slower, intake));
 
+        controller.povLeft().whileTrue(
+                new OrbitPose(
+                        drive,
+                        () -> new Pose2d(FieldConstants.RED_GOAL_POSITION, Rotation2d.fromDegrees(0)),
+                        controller::getRightX)
+        );
 
 //        controller.b().whileTrue(
 //                Commands.runOnce(drive::test)
 //        );
         // Lock to 0° when A button is held
-        controller
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
-                                () -> new Rotation2d()));
+//        controller
+//                .a()
+//                .whileTrue(
+//                        DriveCommands.joystickDriveAtAngle(
+//                                drive,
+//                                () -> -controller.getLeftY(),
+//                                () -> -controller.getLeftX(),
+//                                () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Reset gyro to 0° when B button is pressed
+        // Reset gyro to 0° when B button is pressed
         controller
                 .b()
                 .onTrue(
@@ -262,21 +267,21 @@ public class RobotContainer {
                                 .ignoringDisable(true));
 
         // Pathfind to Pose when the Y button is pressed
-        controller.y().onTrue(
-                DriveCommands.pathFindToPose(() -> robotState.getEstimatedPose(),
-                        new Pose2d(1, 4, Rotation2d.kZero),
-                        PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
-                        PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
+//        controller.y().onTrue(
+//                DriveCommands.pathFindToPose(() -> robotState.getEstimatedPose(),
+//                        new Pose2d(1, 4, Rotation2d.kZero),
+//                        PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
+//                        PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
 
         // On-the-fly path with waypoints while the Right Bumper is held
-        controller.rightBumper().whileTrue(
-                new OnTheFlyPathCommand(drive, () -> robotState.getEstimatedPose(),
-                        new ArrayList<>(Arrays.asList()), // List
-                        // of
-                        // waypoints
-                        new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
-                        MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
-                        PathConstants.PATHGENERATION_ROT_TOLERANCE));
+//        controller.rightBumper().whileTrue(
+//                new OnTheFlyPathCommand(drive, () -> robotState.getEstimatedPose(),
+//                        new ArrayList<>(Arrays.asList()), // List
+//                        // of
+//                        // waypoints
+//                        new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
+//                        MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
+//                        PathConstants.PATHGENERATION_ROT_TOLERANCE));
 
 
         LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
@@ -294,22 +299,20 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
                         .withTolerance(Inches.of(3), Degrees.of(5)));
 
-        Command steppableCommand = new SteppableCommandGroup(
-                controller.x(),
-                controller.y(),
-                Commands.runOnce(() -> System.out.println("Step 1")),
-                Commands.runOnce(() -> System.out.println("Step 2")),
-                Commands.runOnce(() -> System.out.println("Step 3")));
-
-        SmartDashboard.putData("Steppable Command", steppableCommand);
+//        Command steppableCommand = new SteppableCommandGroup(
+//                controller.x(),
+//                controller.y(),
+//                Commands.runOnce(() -> System.out.println("Step 1")),
+//                Commands.runOnce(() -> System.out.println("Step 2")),
+//                Commands.runOnce(() -> System.out.println("Step 3")));
+//
+//        SmartDashboard.putData("Steppable Command", steppableCommand);
 
         // controller.x()
         // .whileTrue(new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
         // .withTolerance(Inches.of(3), Degrees.of(5)));
 
-        // controller.x()
-        // .whileTrue(new AlignToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(0)),
-        // AlignMode.STRAFE, () -> controller.getRightX()));
+
 
         // Right bumper: Shoot on the Move
 

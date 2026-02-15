@@ -81,14 +81,6 @@ public final class Constants {
         public static final int SHOOTER_PORT = 0;
     }
 
-//    public static final class BuildConstants {
-//        public static final String MAVEN_NAME = "idk";
-//        public static final String BUILD_DATE = "";
-//        public static final String GIT_SHA = "";
-//        public static final String GIT_DATE = "";
-//        public static final String GIT_BRANCH = "";
-//    }
-
     public static final class PathConstants {
 
         public static final Distance STARTING_POSE_DRIVE_TOLERANCE =

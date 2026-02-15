@@ -13,7 +13,7 @@ public class Vision extends SubsystemBase {
     private final RobotState robotState;
 
     @Getter
-    private Pose2d lastVisionObservation;
+    private Pose2d lastVisionObservation = Pose2d.kZero;
 
     public Vision(RobotState robotState) {
         this.robotState = robotState;
@@ -48,7 +48,7 @@ public class Vision extends SubsystemBase {
                         limelightMeasurement.timestampSeconds,
                         limelightMeasurement.pose,
                         VisionConstants.VISION_LINEAR_STANDARD_DEVIATION_METERS,
-                        VisionConstants.VISION_ANGULAR_STANDARD_DEVIATION_RAD_PER_SECOND)
+                        VisionConstants.VISION_ANGULAR_STANDARD_DEVIATION_RAD)
         );
     }
 }
