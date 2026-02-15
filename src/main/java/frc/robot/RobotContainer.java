@@ -32,7 +32,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -43,64 +42,40 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.commands.DriveToPoseBase;
 import frc.lib.commands.SteppableCommandGroup;
-import frc.lib.commands.AlignToPoseBase.AlignMode;
-import frc.lib.devices.AprilTagCamera;
-import frc.lib.io.vision.VisionIO;
-import frc.lib.io.vision.VisionIOPhotonVision;
-import frc.lib.io.vision.VisionIOPhotonVisionSim;
-import frc.lib.posestimator.PoseEstimator;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.lib.util.PointInPolygon;
-import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.GamePieceVisualizer;
-import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
-import frc.robot.commands.AlignToPose;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.OnTheFlyPathCommand;
 import frc.robot.commands.autos.NoneAuto;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.DriveConstants;
-import frc.robot.subsystems.Drive.GyroIO;
-import frc.robot.subsystems.Drive.GyroIOPigeon2;
-import frc.robot.subsystems.Drive.ModuleIO;
-import frc.robot.subsystems.Drive.ModuleIOSim;
-import frc.robot.subsystems.Drive.ModuleIOTalonFX;
+import frc.robot.subsystems.Vision.Vision;
 import frc.robot.util.BallSimulator;
+
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meter;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.FeetPerSecond;
-import static edu.wpi.first.units.Units.Volts;
+
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.Logger;
-import java.util.function.Supplier;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.simulation.VisionSystemSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -117,6 +92,8 @@ public class RobotContainer {
 
     Shooter shooter = new Shooter();
     Transfer transfer = new Transfer();
+
+    private final Vision vision = new Vision(this.robotState);
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
 
@@ -125,6 +102,7 @@ public class RobotContainer {
     private final LoggedDashboardChooser<PathPlannerAuto> autoChooser;
     private final LoggedDashboardChooser<Boolean> conditionalChooser;
     public static Field2d autoPreviewField = new Field2d();
+    public static Field2d currentPoseField = new Field2d();
 
     private final Trigger inAllianceRegionTrigger;
 
@@ -132,8 +110,7 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
-    public RobotContainer()
-    {
+    public RobotContainer() {
         RobotConfig config = null;
         try {
             config = RobotConfig.fromGUISettings();
@@ -187,7 +164,7 @@ public class RobotContainer {
                 for (PathPlannerPath pathPart : path) {
                     poses.addAll(pathPart.getPathPoses());
                 }
-                System.out.println("Previewing path: " + auto.getName() +  " Num Poses:" + poses.size());
+                System.out.println("Previewing path: " + auto.getName() + " Num Poses:" + poses.size());
                 autoPreviewField.getObject("path").setPoses(poses);
             } catch (Exception e) {
                 System.out.println("Couldn't get path group for auto: " + auto.getName());
@@ -200,15 +177,17 @@ public class RobotContainer {
             //autoPreviewField.getObject("path").setPoses(auto.());
         });
 
+        SmartDashboard.putData("Current Pose", currentPoseField);
+
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
-            robotState.getEstimatedPose().getTranslation(),
-            FieldConstants.ALLIANCE_STATION_POLYGON));
+                robotState.getEstimatedPose().getTranslation(),
+                FieldConstants.ALLIANCE_STATION_POLYGON));
 
         // Configure the button bindings
         configureButtonBindings();
 
         GamePieceVisualizer algae = new GamePieceVisualizer("Algae",
-            new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
+                new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
 
 
         // Detect if controllers are missing / Stop multiple warnings
@@ -229,15 +208,14 @@ public class RobotContainer {
         }
     }
 
-    private void configureButtonBindings()
-    {
+    private void configureButtonBindings() {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
-            DriveCommands.joystickDrive(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> -controller.getRightX()));
+                DriveCommands.joystickDrive(
+                        drive,
+                        () -> -controller.getLeftY(),
+                        () -> -controller.getLeftX(),
+                        () -> -controller.getRightX()));
 
 //
 //            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(0).test()));
@@ -245,16 +223,16 @@ public class RobotContainer {
 //            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(2).test()));
 //            controller.b().whileTrue(Commands.runOnce(() -> drive.getModule(3).test()));
 
-            controller.rightBumper().onTrue(Commands.runOnce((shooter::topFaster),shooter));
-            controller.leftBumper().onTrue(Commands.runOnce((shooter::topSlower),shooter));
-            controller.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster),shooter));
-            controller.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower),shooter));
-            //controller.x().onTrue(Commands.runOnce(topShooter::stop,topShooter).andThen(Commands.runOnce(bottomShooter::stop,bottomShooter)));
-            controller.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
-            controller.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
-            controller.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
-            controller.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
-            controller.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+        controller.rightBumper().onTrue(Commands.runOnce((shooter::topFaster), shooter));
+        controller.leftBumper().onTrue(Commands.runOnce((shooter::topSlower), shooter));
+        controller.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster), shooter));
+        controller.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower), shooter));
+        //controller.x().onTrue(Commands.runOnce(topShooter::stop,topShooter).andThen(Commands.runOnce(bottomShooter::stop,bottomShooter)));
+        controller.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
+        controller.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
+        controller.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+        controller.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
+        controller.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
 
 
 //        controller.b().whileTrue(
@@ -262,67 +240,66 @@ public class RobotContainer {
 //        );
         // Lock to 0° when A button is held
         controller
-            .a()
-            .whileTrue(
-                DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> new Rotation2d()));
+                .a()
+                .whileTrue(
+                        DriveCommands.joystickDriveAtAngle(
+                                drive,
+                                () -> -controller.getLeftY(),
+                                () -> -controller.getLeftX(),
+                                () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Reset gyro to 0° when B button is pressed
         controller
-            .b()
-            .onTrue(
-                Commands.runOnce(
-                    () -> robotState.resetPose(
-                        new Pose2d(robotState.getEstimatedPose().getTranslation(),
-                            new Rotation2d())))
-                    .ignoringDisable(true));
+                .b()
+                .onTrue(
+                        Commands.runOnce(
+                                        () -> robotState.resetPose(
+                                                new Pose2d(robotState.getEstimatedPose().getTranslation(),
+                                                        new Rotation2d())))
+                                .ignoringDisable(true));
 
         // Pathfind to Pose when the Y button is pressed
         controller.y().onTrue(
-            DriveCommands.pathFindToPose(() -> robotState.getEstimatedPose(),
-                new Pose2d(1, 4, Rotation2d.kZero),
-                PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
-                PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
+                DriveCommands.pathFindToPose(() -> robotState.getEstimatedPose(),
+                        new Pose2d(1, 4, Rotation2d.kZero),
+                        PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
+                        PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
 
         // On-the-fly path with waypoints while the Right Bumper is held
         controller.rightBumper().whileTrue(
-            new OnTheFlyPathCommand(drive, () -> robotState.getEstimatedPose(),
-                new ArrayList<>(Arrays.asList()), // List
-                // of
-                // waypoints
-                new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
-                MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
-                PathConstants.PATHGENERATION_ROT_TOLERANCE));
-
+                new OnTheFlyPathCommand(drive, () -> robotState.getEstimatedPose(),
+                        new ArrayList<>(Arrays.asList()), // List
+                        // of
+                        // waypoints
+                        new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
+                        MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
+                        PathConstants.PATHGENERATION_ROT_TOLERANCE));
 
 
         LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
         SmartDashboard.putData("Shoot Ball", Commands
-            .runOnce(() -> BallSimulator.launch(FeetPerSecond.of(ballVel.getAsDouble()))));
+                .runOnce(() -> BallSimulator.launch(FeetPerSecond.of(ballVel.getAsDouble()))));
 
         GamePieceVisualizer algaeViz =
-            new GamePieceVisualizer("Algae #1", new Pose3d(1, 1, 1, new Rotation3d()));
+                new GamePieceVisualizer("Algae #1", new Pose3d(1, 1, 1, new Rotation3d()));
         SmartDashboard.putData("Hide Algae", Commands.runOnce(() -> algaeViz.hide()));
 
         LoggedTuneableProfiledPID linearController =
-            new LoggedTuneableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 0, 3.0);
+                new LoggedTuneableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 0, 3.0);
 
         SmartDashboard.putData("DriveToPose Command",
-            new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
-                .withTolerance(Inches.of(3), Degrees.of(5)));
+                new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
+                        .withTolerance(Inches.of(3), Degrees.of(5)));
 
         Command steppableCommand = new SteppableCommandGroup(
-            controller.x(),
-            controller.y(),
-            Commands.runOnce(() -> System.out.println("Step 1")),
-            Commands.runOnce(() -> System.out.println("Step 2")),
-            Commands.runOnce(() -> System.out.println("Step 3")));
+                controller.x(),
+                controller.y(),
+                Commands.runOnce(() -> System.out.println("Step 1")),
+                Commands.runOnce(() -> System.out.println("Step 2")),
+                Commands.runOnce(() -> System.out.println("Step 3")));
 
         SmartDashboard.putData("Steppable Command", steppableCommand);
 
@@ -337,11 +314,11 @@ public class RobotContainer {
         // Right bumper: Shoot on the Move
 
         inAllianceRegionTrigger.onTrue(
-            Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
-                .ignoringDisable(true));
+                Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
+                        .ignoringDisable(true));
         inAllianceRegionTrigger.onFalse(
-            Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
-                .ignoringDisable(true));
+                Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
+                        .ignoringDisable(true));
     }
 
     /**
@@ -349,51 +326,51 @@ public class RobotContainer {
      *
      * @return the command to run in autonomous
      */
-    public Command getAutonomousCommand()
-    {
+    public Command getAutonomousCommand() {
         return autoChooser.get();
     }
 
-    /** This function is called periodically by Robot.java when disabled. */
-    public void checkStartPose()
-    {
+    /**
+     * This function is called periodically by Robot.java when disabled.
+     */
+    public void checkStartPose() {
 
         /* Starting pose checker for auto */
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
             double distanceFromStartPose = robotState.getEstimatedPose().getTranslation()
-                .getDistance(autoPreviewField.getObject("path").getPoses().get(0).getTranslation());
+                    .getDistance(autoPreviewField.getObject("path").getPoses().get(0).getTranslation());
             double degreesFromStartPose = Math.abs(robotState.getEstimatedPose().getRotation()
-                .minus(
-                    autoPreviewField.getObject("path").getPoses().get(0).getRotation())
-                .getDegrees());
+                    .minus(
+                            autoPreviewField.getObject("path").getPoses().get(0).getRotation())
+                    .getDegrees());
 
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start",
-                Math.round(distanceFromStartPose * 100.0) / 100.0);
+                    Math.round(distanceFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Position within "
-                    + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
-                distanceFromStartPose < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
+                    "Auto Pose Check/Robot Position within "
+                            + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
+                    distanceFromStartPose < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start",
-                Math.round(degreesFromStartPose * 100.0) / 100.0);
+                    Math.round(degreesFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Rotation within "
-                    + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES + " degrees",
-                degreesFromStartPose < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES
-                    .in(Degrees));
+                    "Auto Pose Check/Robot Rotation within "
+                            + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES + " degrees",
+                    degreesFromStartPose < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES
+                            .in(Degrees));
 
         } catch (Exception e) {
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Position within "
-                    + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
-                false);
+                    "Auto Pose Check/Robot Position within "
+                            + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
+                    false);
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start", -1);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Rotation within "
-                    + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees) + " degrees",
-                false);
+                    "Auto Pose Check/Robot Rotation within "
+                            + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees) + " degrees",
+                    false);
         }
     }
 
@@ -410,6 +387,8 @@ public class RobotContainer {
     }
 
     public void periodic() {
+        currentPoseField.setRobotPose(robotState.getEstimatedPose());
+        currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation());
     }
 
     public void teleopPeriodic() {

@@ -90,6 +90,7 @@ public class RobotState {
 
     public void addVisionObservation(VisionPoseObservation observation)
     {
+        Logger.recordOutput("Odometry/VisionPose", observation.robotPose());
         poseEstimator.addVisionObservation(observation);
     }
 

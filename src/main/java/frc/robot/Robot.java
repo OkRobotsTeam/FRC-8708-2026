@@ -193,7 +193,6 @@ public class Robot extends LoggedRobot {
         robotContainer.checkStartPose();
 
 
-
         var alliance = DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
         // Get currently selected command
