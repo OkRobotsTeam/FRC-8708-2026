@@ -21,11 +21,23 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -94,6 +106,7 @@ public class RobotContainer {
 
     private final Trigger inAllianceRegionTrigger;
 
+
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
@@ -106,6 +119,10 @@ public class RobotContainer {
             e.printStackTrace();
         }
         drive = DriveConstants.get();
+        TrajectoryConfig trajectoryConfig = new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0));
+        PathPlannerLogging.setLogActivePathCallback(poses -> logStupidThingThatWOntLog(poses,trajectoryConfig));
+        PathPlannerLogging.setLogCurrentPoseCallback(pose -> Logger.recordOutput("PathPlanner/CurrentPose", pose));
+        PathPlannerLogging.setLogTargetPoseCallback(pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
 
         AutoBuilder.configure(
                 RobotState.getInstance()::getEstimatedPose, // Robot pose supplier
@@ -183,6 +200,14 @@ public class RobotContainer {
      * ({@link edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a
      * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
+
+    private void logStupidThingThatWOntLog(List<Pose2d> poses, TrajectoryConfig config)  {
+        if (poses.size() > 1)  {
+            Logger.recordOutput("PathPlanner/ActivePath", TrajectoryGenerator.generateTrajectory(poses,config));
+
+        }
+    }
+
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
