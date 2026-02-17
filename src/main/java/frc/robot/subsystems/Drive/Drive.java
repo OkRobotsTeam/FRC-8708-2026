@@ -233,7 +233,7 @@ public class Drive extends SubsystemBase {
         double average = 0;
         for (int i = 0; i < 4; i++) {
             modules[i].runSetpoint(setpointStates[i]);
-            average += setpointStates[i].speedMetersPerSecond;
+            average += Math.abs(setpointStates[i].speedMetersPerSecond);
         }
         average = average/4.0;
         Logger.recordOutput("SwerveSpeed/TargetSpeed",average );
@@ -294,9 +294,13 @@ public class Drive extends SubsystemBase {
     private SwerveModuleState[] getModuleStates()
     {
         SwerveModuleState[] states = new SwerveModuleState[4];
+        double average = 0;
         for (int i = 0; i < 4; i++) {
             states[i] = modules[i].getState();
+            average += Math.abs(states[i].speedMetersPerSecond);
         }
+        average = average/4.0;
+        Logger.recordOutput("SwerveSpeed/Measured", average);
         return states;
     }
 
