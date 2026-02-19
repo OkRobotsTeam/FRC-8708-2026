@@ -22,21 +22,12 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -46,8 +37,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.commands.AlignToPoseBase;
-import frc.lib.commands.SteppableCommandGroup;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
@@ -65,14 +54,12 @@ import frc.robot.util.BallSimulator;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.littletonrobotics.junction.Logger;
@@ -212,7 +199,7 @@ public class RobotContainer {
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
-                DriveCommands.joystickDrive(
+                DriveCommands.joystickDriveCommand(
                         drive,
                         () -> -controller.getLeftY(),
                         () -> -controller.getLeftX(),
@@ -234,10 +221,12 @@ public class RobotContainer {
         controller.povDown().onTrue(Commands.runOnce(intake::slower, intake));
 
         controller.povLeft().whileTrue(
-                new OrbitPose(
+                new RotateToPose(
                         drive,
-                        () -> new Pose2d(FieldConstants.RED_GOAL_POSITION, Rotation2d.fromDegrees(0)),
-                        controller::getRightX)
+                        () -> FieldConstants.RED_GOAL_POSITION,
+                        controller::getLeftX,
+                        controller::getLeftY
+                )
         );
 
 //        controller.b().whileTrue(

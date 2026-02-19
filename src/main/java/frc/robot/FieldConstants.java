@@ -28,7 +28,7 @@ public class FieldConstants {
 
     public static final Distance STARTING_LINE_X = Inches.of(299.438);
 
-    public static final Translation2d RED_GOAL_POSITION = new Translation2d(0, 0);
+    public static final Translation2d RED_GOAL_POSITION = new Translation2d(11.6, 3.7);
 
     public static final Translation2d FIELD_CENTER =
         new Translation2d(FIELD_LENGTH.in(Meters) / 2, FIELD_WIDTH.in(Meters) / 2);

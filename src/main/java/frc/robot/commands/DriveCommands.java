@@ -69,47 +69,52 @@ public class DriveCommands {
             .getTranslation();
     }
 
+    public static void joystickDrive(Drive drive,
+                                     DoubleSupplier xSupplier,
+                                     DoubleSupplier ySupplier,
+                                     DoubleSupplier omegaSupplier) {
+        RobotState robotState = RobotState.getInstance();
+
+        // System.out.println("joystickDrive: " + xSupplier.getAsDouble() + " " + ySupplier.getAsDouble() + " " + omegaSupplier.getAsDouble());
+        // Get linear velocity
+        Translation2d linearVelocity =
+                getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
+                        ySupplier.getAsDouble());
+
+        //System.out.println("Moving linearVelocity: " + linearVelocity);
+        // Apply rotation deadband
+        double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+
+        // Square rotation value for more precise control
+        omega = Math.copySign(omega * omega, omega);
+
+        // Convert to field relative speeds & send command
+        ChassisSpeeds speeds = new ChassisSpeeds(
+                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                omega * drive.getMaxAngularSpeedRadPerSec());
+        boolean isFlipped = DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+        drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        speeds,
+                        isFlipped
+                                ? robotState.getEstimatedPose().getRotation()
+                                .plus(new Rotation2d(Math.PI))
+                                : robotState.getEstimatedPose().getRotation()));
+    }
+
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
      */
-    public static Command joystickDrive(
+    public static Command joystickDriveCommand(
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
         DoubleSupplier omegaSupplier)
     {
-        RobotState robotState = RobotState.getInstance();
         return Commands.run(
-            () -> {
-//                System.out.println("joystickDrive: " + xSupplier.getAsDouble() + " " + ySupplier.getAsDouble() + " " + omegaSupplier.getAsDouble());
-                // Get linear velocity
-                Translation2d linearVelocity =
-                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
-                        ySupplier.getAsDouble());
-
-                //System.out.println("Moving linearVelocity: " + linearVelocity);
-                // Apply rotation deadband
-                double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-
-                // Square rotation value for more precise control
-                omega = Math.copySign(omega * omega, omega);
-
-                // Convert to field relative speeds & send command
-                ChassisSpeeds speeds = new ChassisSpeeds(
-                    linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                    linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                    omega * drive.getMaxAngularSpeedRadPerSec());
-                boolean isFlipped = DriverStation.getAlliance().isPresent()
-                    && DriverStation.getAlliance().get() == Alliance.Red;
-                drive.runVelocity(
-                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                        speeds,
-                        isFlipped
-                            ? robotState.getEstimatedPose().getRotation()
-                                .plus(new Rotation2d(Math.PI))
-                            : robotState.getEstimatedPose().getRotation()));
-                //drive.test();
-            },
+            () -> joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
             drive)
             .withName("Joystick Drive");
     }
