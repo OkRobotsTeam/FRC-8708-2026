@@ -25,7 +25,7 @@ public class Intake extends SubsystemBase {
     public Intake() {
         motor = new TalonFX(MOTOR_ID);
         var configs = new MotorOutputConfigs();
-        configs.Inverted = InvertedValue.Clockwise_Positive;
+        configs.Inverted = InvertedValue.CounterClockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
         motor.getConfigurator().apply(configs);
@@ -48,6 +48,7 @@ public class Intake extends SubsystemBase {
 
     public void run() {
         setMotorPercent(intakeSpeed);
+        System.out.println("Running Intake");
     }
 
     public Command stopCommand() {

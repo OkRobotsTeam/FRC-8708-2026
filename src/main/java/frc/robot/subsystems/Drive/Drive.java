@@ -97,6 +97,7 @@ public class Drive extends SubsystemBase {
     private final Alert gyroDisconnectedAlert =
         new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
+    private double speedMultiplier = 1;
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
 
@@ -155,8 +156,9 @@ public class Drive extends SubsystemBase {
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
 
-    @Override
     @SuppressWarnings("LockNotBeforeTry")
+
+    @Override
     public void periodic()
     {
         LoggerHelper.recordCurrentCommand("Drive", this);
@@ -218,9 +220,15 @@ public class Drive extends SubsystemBase {
         runVelocity(speeds);
     }
 
+    public void setSpeedMultiplier(double speedMultiplierIn) {
+        speedMultiplier= speedMultiplierIn;
+        System.out.println("Setting speed multiplier to " + speedMultiplier);
+    }
+
     public void runVelocity(ChassisSpeeds speeds)
     {
         // Calculate module setpoints
+        speeds = speeds.times(speedMultiplier);
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstants.kSpeedAt12Volts);

@@ -51,6 +51,8 @@ import frc.robot.subsystems.Drive.DriveConstants;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Vision.Vision;
 import frc.robot.util.BallSimulator;
+import com.pathplanner.lib.auto.NamedCommands;
+
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
@@ -87,8 +89,10 @@ public class RobotContainer {
 
     // Dashboard inputs
 
-    private final LoggedDashboardChooser<PathPlannerAuto> autoChooser;
-    private final LoggedDashboardChooser<Boolean> conditionalChooser;
+    private LoggedDashboardChooser<PathPlannerAuto> autoChooser;
+    private LoggedDashboardChooser<Boolean> conditionalChooser;
+    private LoggedDashboardChooser<Double> speedChooser;
+
     public static Field2d autoPreviewField = new Field2d();
     public static Field2d currentPoseField = new Field2d();
 
@@ -127,7 +131,19 @@ public class RobotContainer {
                 drive // Reference to this subsystem to set requirements
         );
 
-
+        speedChooser = new LoggedDashboardChooser<>("Drive Speed");
+        speedChooser.addDefaultOption("100%", 1.0);
+        speedChooser.addOption("75%", 0.75);
+        speedChooser.addOption("50%", 0.50);
+        speedChooser.addOption("25%", 0.25);
+        speedChooser.addOption("10%", 0.1);
+        speedChooser.addOption("5%", 0.05);
+        speedChooser.onChange(drive::setSpeedMultiplier);
+        if (speedChooser.get() != null) {
+            drive.setSpeedMultiplier(speedChooser.get());
+        } else {
+            drive.setSpeedMultiplier(0.1);
+        }
         conditionalChooser = new LoggedDashboardChooser<>("Conditional Choice");
         conditionalChooser.addOption("True", true);
         conditionalChooser.addOption("False", false);
@@ -161,7 +177,7 @@ public class RobotContainer {
                 //throw new RuntimeException(e);
             }
 
-// Display the path on the dashboard field widget
+            // Display the path on the dashboard field widget
             //autoPreviewField.getObject("path").setPoses(auto.());
         });
 
@@ -173,6 +189,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+        registerNamedCommands();
 
         GamePieceVisualizer algae = new GamePieceVisualizer("Algae",
                 new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
@@ -246,13 +263,15 @@ public class RobotContainer {
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Reset gyro to 0° when B button is pressed
+
         controller
                 .b()
                 .onTrue(
                         Commands.runOnce(
                                         () -> robotState.resetPose(
                                                 new Pose2d(robotState.getEstimatedPose().getTranslation(),
-                                                        new Rotation2d())))
+                                                        this.getZeroPose()
+                                                )))
                                 .ignoringDisable(true));
 
         // Pathfind to Pose when the Y button is pressed
@@ -313,6 +332,14 @@ public class RobotContainer {
                         .ignoringDisable(true));
     }
 
+    private Rotation2d getZeroPose() {
+        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue ) {
+            return new Rotation2d();
+        } else {
+            return Rotation2d.fromDegrees(180);
+        }
+    }
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -366,13 +393,19 @@ public class RobotContainer {
         }
     }
 
+    private void registerNamedCommands() {
+        NamedCommands.registerCommand("runIntake", Commands.runOnce(() -> intake.run()));
+    }
+
     public void init() {
     }
 
     public void teleopInit() {
+        drive.setSpeedMultiplier(speedChooser.get());
     }
 
     public void autonomousInit() {
+        drive.setSpeedMultiplier(1);
     }
 
     public void testInit() {

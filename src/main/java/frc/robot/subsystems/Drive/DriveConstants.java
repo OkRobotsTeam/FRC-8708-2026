@@ -62,21 +62,34 @@ public class DriveConstants {
 
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
+
+    //Voltage control numbers
+
     private static final Slot0Configs steerGains = new Slot0Configs()
             .withKP(100).withKI(0).withKD(0.3)
             .withKS(0.1).withKV(1.50).withKA(0)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
-    // When using closed-loop control, the drive motor uses the control
-    // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
+
     private static final Slot0Configs driveGains = new Slot0Configs()
             .withKP(1).withKI(0).withKD(0)
             .withKS(0).withKV(1.1);
+
+//    private static final Slot0Configs steerGains = new Slot0Configs()
+//            .withKP(100).withKI(0).withKD(1.2)
+//            .withKS(0.1).withKV(12).withKA(0)
+//            .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+//
+//
+//    private static final Slot0Configs driveGains = new Slot0Configs()
+//            .withKP(0).withKI(0).withKD(0)
+//            .withKS(0).withKV(16);
+
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors
-    private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.TorqueCurrentFOC;
+    private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
     // The closed-loop output type to use for the drive motors;
     // This affects the PID/FF gains for the drive motors
-    private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.TorqueCurrentFOC;
+    private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
 
     // The type of motor used for the drive motor
     private static final DriveMotorArrangement kDriveMotorType = DriveMotorArrangement.TalonFX_Integrated;
@@ -89,7 +102,7 @@ public class DriveConstants {
 
     // The stator current at which the wheels start to slip;
     // This needs to be tuned to your individual robot
-    private static final Current kSlipCurrent = Amps.of(120);
+    private static final Current kSlipCurrent = Amps.of(20);
 
     // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
     // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.

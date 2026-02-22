@@ -29,12 +29,12 @@ public class Vision extends SubsystemBase {
         // First, tell Limelight your robot's current orientation
         LimelightHelpers.SetRobotOrientation(
                 "",
-                this.robotState.getRotation().getDegrees(),
+                180+this.robotState.getEstimatedPose().getRotation().getDegrees(),
                 this.robotState.getVelocity().omegaRadiansPerSecond
         );
 
         // Get the pose estimate
-        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("");
 
         if (limelightMeasurement.pose.equals(Pose2d.kZero)) {
             return;
