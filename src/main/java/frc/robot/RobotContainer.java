@@ -85,7 +85,8 @@ public class RobotContainer {
 
     private final Vision vision = new Vision(this.robotState);
     // Controller
-    private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
+    private final CommandXboxControllerExtended driverController = new CommandXboxControllerExtended(0);
+    private final CommandXboxControllerExtended manipulatorController = new CommandXboxControllerExtended(1);
 
     // Dashboard inputs
 
@@ -218,33 +219,62 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDriveCommand(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()));
 
 
-        controller.rightBumper().onTrue(Commands.runOnce((shooter::topFaster), shooter));
-        controller.leftBumper().onTrue(Commands.runOnce((shooter::topSlower), shooter));
-        controller.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster), shooter));
-        controller.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower), shooter));
-        controller.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
-        controller.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
-        controller.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
-        controller.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
-        controller.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
-        controller.x().onTrue(Commands.runOnce(intake::run, intake));
-        controller.x().onFalse(Commands.runOnce(intake::stop, intake));
-        controller.povUp().onTrue(Commands.runOnce(intake::faster, intake));
-        controller.povDown().onTrue(Commands.runOnce(intake::slower, intake));
+        manipulatorController.rightBumper().onTrue(Commands.runOnce((shooter::topFaster), shooter));
+        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::topSlower), shooter));
+        manipulatorController.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster), shooter));
+        manipulatorController.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower), shooter));
+        manipulatorController.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
 
-        controller.povLeft().whileTrue(
+        driverController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
+        driverController.a().onFalse(Commands.runOnce(intake::stop, intake));
+        driverController.x().onTrue(Commands.runOnce(() -> intake.runSpeed(0.5), intake));
+        driverController.x().onFalse(Commands.runOnce(intake::stop, intake));
+        driverController.povUp().onTrue(Commands.runOnce(intake::faster, intake));
+        driverController.povDown().onTrue(Commands.runOnce(intake::slower, intake));
+
+        manipulatorController.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
+        manipulatorController.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+        manipulatorController.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
+        manipulatorController.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+
+
+        driverController.povLeft().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
+                new RotateToPose(
+                        drive,
+                        () -> FieldConstants.BLUE_GOAL_POSITION,
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getLeftY()
+                )
+        );
+
+        driverController.povLeft().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Red)).whileTrue(
                 new RotateToPose(
                         drive,
                         () -> FieldConstants.RED_GOAL_POSITION,
-                        controller::getLeftX,
-                        controller::getLeftY
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getLeftY()
                 )
         );
+
+
+        // Reset gyro to 0° when B button is pressed
+
+        driverController
+                .b()
+                .onTrue(
+                        Commands.runOnce(
+                                        () -> robotState.resetPose(
+                                                new Pose2d(robotState.getEstimatedPose().getTranslation(),
+                                                        vision.updateFromMegaTag1().getRotation()
+                                                )))
+                                .ignoringDisable(true));
+
+
 
 //        controller.b().whileTrue(
 //                Commands.runOnce(drive::test)
@@ -262,17 +292,6 @@ public class RobotContainer {
         // Switch to X pattern when X button is pressed
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-        // Reset gyro to 0° when B button is pressed
-
-        controller
-                .b()
-                .onTrue(
-                        Commands.runOnce(
-                                        () -> robotState.resetPose(
-                                                new Pose2d(robotState.getEstimatedPose().getTranslation(),
-                                                        this.getZeroPose()
-                                                )))
-                                .ignoringDisable(true));
 
         // Pathfind to Pose when the Y button is pressed
 //        controller.y().onTrue(
@@ -413,7 +432,7 @@ public class RobotContainer {
 
     public void periodic() {
         currentPoseField.setRobotPose(robotState.getEstimatedPose());
-        currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation());
+        currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation().robotPose());
     }
 
     public void teleopPeriodic() {

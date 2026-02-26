@@ -4,9 +4,13 @@
 
 package frc.lib.commands;
 
+import static edu.wpi.first.math.MathUtil.clamp;
 import static edu.wpi.first.units.Units.Radians;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import edu.wpi.first.math.controller.PIDController;
+import frc.lib.util.LoggedTuneablePID;
 import org.littletonrobotics.junction.Logger;
 
 
@@ -30,20 +34,21 @@ public abstract class RotateToPoseBase extends Command {
     private final Supplier<Translation2d> targetTranslation;
     private final DoubleSupplier joystickXInput;
     private final DoubleSupplier joystickYInput;
-    private final LoggedTuneableProfiledPID angularController;
+    private final LoggedTuneablePID angularController;
 
     public RotateToPoseBase(
         Drive drive,
         Supplier<Translation2d> targetTranslation,
         DoubleSupplier joystickXInput,
         DoubleSupplier joystickYInput,
-        LoggedTuneableProfiledPID angularController)
+        LoggedTuneablePID angularController)
     {
         this.drive = drive;
         this.targetTranslation = targetTranslation;
         this.joystickXInput = joystickXInput;
         this.joystickYInput = joystickYInput;
         this.angularController = angularController;
+        this.angularController.setTolerance(Math.toRadians(1));
 
         angularController.enableContinuousInput(-Math.PI, Math.PI);
         addRequirements(drive);
@@ -57,9 +62,8 @@ public abstract class RotateToPoseBase extends Command {
             ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(),
                 robotState.getEstimatedPose().getRotation());
 
-        angularController.reset(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            fieldVelocity.omegaRadiansPerSecond);
+        angularController.reset();
+        angularController.setSetpoint(robotState.getEstimatedPose().getRotation().getRadians());
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -79,16 +83,20 @@ public abstract class RotateToPoseBase extends Command {
                         .minus(currentPose.getTranslation())
                         .getAngle();
 
-        double angularOutput = angularController.calculate(
-                currentPose.getRotation().getRadians(),
-                angleToTarget.getRadians());
+        double angularOutput = clamp(
+                angularController.calculate(
+                    currentPose.getRotation().getRadians(),
+                    angleToTarget.getRadians()),
+                -0.6, 0.6);
 
-        Logger.recordOutput("/RotateToPose/angularOutput", angularOutput);
+        Logger.recordOutput("/RotateToPose/angularController/targetTranslation", new Pose2d(targetTranslation.get(), Rotation2d.kZero));
+        Logger.recordOutput("/RotateToPose/angularController/PIDOutput", angularOutput);
+        Logger.recordOutput("/RotateToPose/angularController/PIDError", Math.toDegrees(angularController.getError()));
         Logger.recordOutput("/RotateToPose/angularController/angleToTarget", angleToTarget);
         Logger.recordOutput("/RotateToPose/angularController/currentAngle", currentPose.getRotation().getRadians());
         Logger.recordOutput("/RotateToPose/angularController/targetAngle", angleToTarget.getRadians());
-        
-        DriveCommands.joystickDrive(drive, joystickYInput, joystickXInput, () -> angularOutput);
+
+        DriveCommands.joystickDrive(drive, joystickYInput, joystickXInput, () -> angularOutput, false);
     }
 
     // Returns true when the command should end.
@@ -100,6 +108,6 @@ public abstract class RotateToPoseBase extends Command {
 
     public Angle getAngularError()
     {
-        return Radians.of(angularController.getPositionError());
+        return Radians.of(angularController.getError());
     }
 }

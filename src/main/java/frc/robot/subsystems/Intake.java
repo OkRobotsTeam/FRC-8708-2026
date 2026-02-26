@@ -51,6 +51,11 @@ public class Intake extends SubsystemBase {
         System.out.println("Running Intake");
     }
 
+    public void runSpeed(Double speed) {
+        setMotorPercent(speed);
+        System.out.println("Running Intake");
+    }
+
     public Command stopCommand() {
         return new InstantCommand(this::stop,this);
     }

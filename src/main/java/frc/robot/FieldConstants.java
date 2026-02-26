@@ -13,6 +13,7 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 
 /**
@@ -28,10 +29,12 @@ public class FieldConstants {
 
     public static final Distance STARTING_LINE_X = Inches.of(299.438);
 
-    public static final Translation2d RED_GOAL_POSITION = new Translation2d(11.6, 3.7);
 
     public static final Translation2d FIELD_CENTER =
         new Translation2d(FIELD_LENGTH.in(Meters) / 2, FIELD_WIDTH.in(Meters) / 2);
+
+    public static final Translation2d BLUE_GOAL_POSITION = FIELD_CENTER.minus(new Translation2d(Inches.of(143.5).in(Meters), 0.0));
+    public static final Translation2d RED_GOAL_POSITION = FIELD_CENTER.plus(new Translation2d(Inches.of(143.5).in(Meters), 0.0));
 
     public static final Distance ALGAE_DIAMETER = Meters.of(.41);
 

@@ -121,7 +121,7 @@ public abstract class OrbitPoseMaintainRadiusBase extends Command {
                         robotPose.getRotation()
                 );
 
-        drive.runVelocity(speeds);
+        drive.runVelocityInternal(speeds, false);
     }
 
     public Distance getRadiusError() {

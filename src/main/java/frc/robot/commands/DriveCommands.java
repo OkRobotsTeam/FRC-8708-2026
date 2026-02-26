@@ -73,7 +73,8 @@ public class DriveCommands {
     public static void joystickDrive(Drive drive,
                                      DoubleSupplier xSupplier,
                                      DoubleSupplier ySupplier,
-                                     DoubleSupplier omegaSupplier) {
+                                     DoubleSupplier omegaSupplier,
+                                     boolean scaleRotation) {
         RobotState robotState = RobotState.getInstance();
 
         // System.out.println("joystickDrive: " + xSupplier.getAsDouble() + " " + ySupplier.getAsDouble() + " " + omegaSupplier.getAsDouble());
@@ -83,11 +84,16 @@ public class DriveCommands {
                         ySupplier.getAsDouble());
 
         //System.out.println("Moving linearVelocity: " + linearVelocity);
-        // Apply rotation deadband
-        double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
-        // Square rotation value for more precise control
-        omega = Math.copySign(omega * omega, omega);
+        double omega = omegaSupplier.getAsDouble();
+
+        if (scaleRotation) {
+            // Apply rotation deadband
+            omega = MathUtil.applyDeadband(omega, DEADBAND);
+
+            // Square rotation value for more precise control
+            omega = Math.copySign(omega * omega, omega);
+        }
 
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds = new ChassisSpeeds(
@@ -96,13 +102,14 @@ public class DriveCommands {
                 omega * drive.getMaxAngularSpeedRadPerSec());
         boolean isFlipped = DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red;
-        drive.runVelocity(
+        drive.runVelocityInternal(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
                         speeds,
                         isFlipped
                                 ? robotState.getEstimatedPose().getRotation()
                                 .plus(new Rotation2d(Math.PI))
-                                : robotState.getEstimatedPose().getRotation()));
+                                : robotState.getEstimatedPose().getRotation()),
+                scaleRotation);
     }
 
     /**
@@ -115,7 +122,7 @@ public class DriveCommands {
         DoubleSupplier omegaSupplier)
     {
         return Commands.run(
-            () -> joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
+            () -> joystickDrive(drive, xSupplier, ySupplier, omegaSupplier, true),
             drive)
             .withName("Joystick Drive");
     }
@@ -161,13 +168,13 @@ public class DriveCommands {
                     omega);
                 boolean isFlipped = DriverStation.getAlliance().isPresent()
                     && DriverStation.getAlliance().get() == Alliance.Red;
-                drive.runVelocity(
+                drive.runVelocityInternal(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
                         speeds,
                         isFlipped
                             ? robotState.getEstimatedPose().getRotation()
                                 .plus(new Rotation2d(Math.PI))
-                            : robotState.getEstimatedPose().getRotation()));
+                            : robotState.getEstimatedPose().getRotation()), true);
             },
             drive)
 
@@ -265,7 +272,7 @@ public class DriveCommands {
                 Commands.run(
                     () -> {
                         double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
-                        drive.runVelocity(new ChassisSpeeds(0.0, 0.0, speed));
+                        drive.runVelocityInternal(new ChassisSpeeds(0.0, 0.0, speed), false);
                     },
                     drive)),
 

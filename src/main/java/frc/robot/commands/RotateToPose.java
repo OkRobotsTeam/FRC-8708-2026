@@ -6,16 +6,23 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.lib.commands.RotateToPoseBase;
+import frc.lib.util.LoggedTuneablePID;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.subsystems.Drive.Drive;
 
 public class RotateToPose extends RotateToPoseBase {
+//    private final static LoggedTuneableProfiledPID angularController =
+//            new LoggedTuneableProfiledPID("DriveToPose/AngularController", 1.0, 0.0, 0.0, 8.0, 0.0);
 
-    private final static LoggedTuneableProfiledPID angularController =
-        new LoggedTuneableProfiledPID("DriveToPose/AngularController", 3.0, 0, 0, 0, 0);
+
+    private final static LoggedTuneablePID angularController =
+            new LoggedTuneablePID("RotateToPose/AngularController", 0.4, 0.001, 0.03);
+
 
     public RotateToPose(Drive drive,
                         Supplier<Translation2d> targetPose,

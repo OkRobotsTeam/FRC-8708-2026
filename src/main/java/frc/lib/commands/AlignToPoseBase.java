@@ -123,8 +123,8 @@ public abstract class AlignToPoseBase extends Command {
                 linearVelocity.getY(),
                 angularOutput);
 
-        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds,
-            robotState.getEstimatedPose().getRotation()));
+        drive.runVelocityInternal(ChassisSpeeds.fromFieldRelativeSpeeds(speeds,
+            robotState.getEstimatedPose().getRotation()), false);
     }
 
     // Returns true when the command should end.

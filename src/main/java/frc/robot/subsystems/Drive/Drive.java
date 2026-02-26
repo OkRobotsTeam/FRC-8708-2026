@@ -29,6 +29,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -97,7 +98,7 @@ public class Drive extends SubsystemBase {
     private final Alert gyroDisconnectedAlert =
         new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
-    private double speedMultiplier = 1;
+    public double speedMultiplier = 1;
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
 
@@ -217,7 +218,7 @@ public class Drive extends SubsystemBase {
      * @param speeds Speeds in meters/sec
      */
     public void pathPlannerDrive(ChassisSpeeds speeds, DriveFeedforwards feedForwards) {
-        runVelocity(speeds);
+        runVelocityInternal(speeds, false);
     }
 
     public void setSpeedMultiplier(double speedMultiplierIn) {
@@ -225,10 +226,19 @@ public class Drive extends SubsystemBase {
         System.out.println("Setting speed multiplier to " + speedMultiplier);
     }
 
-    public void runVelocity(ChassisSpeeds speeds)
+    public void runVelocity(ChassisSpeeds speedsIn) {
+        runVelocityInternal(speedsIn, false);
+    }
+
+
+    public void runVelocityInternal(ChassisSpeeds speedsIn, boolean scaleRotation)
     {
         // Calculate module setpoints
-        speeds = speeds.times(speedMultiplier);
+        ChassisSpeeds speeds = speedsIn.times(speedMultiplier);
+        if (!scaleRotation) {
+            speeds.omegaRadiansPerSecond = speedsIn.omegaRadiansPerSecond;
+        }
+
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstants.kSpeedAt12Volts);
@@ -261,7 +271,7 @@ public class Drive extends SubsystemBase {
     /** Stops the drive. */
     public void stop()
     {
-        runVelocity(new ChassisSpeeds());
+        runVelocityInternal(new ChassisSpeeds(), true);
     }
 
     /**

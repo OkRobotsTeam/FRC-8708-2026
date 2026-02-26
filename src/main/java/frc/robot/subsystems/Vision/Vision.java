@@ -13,12 +13,18 @@ public class Vision extends SubsystemBase {
     private final RobotState robotState;
 
     @Getter
-    private Pose2d lastVisionObservation = Pose2d.kZero;
+    private PoseEstimator.VisionPoseObservation lastVisionObservation = new PoseEstimator.VisionPoseObservation(0, Pose2d.kZero, 0, 0);
 
     public Vision(RobotState robotState) {
         this.robotState = robotState;
     }
 
+    public Pose2d updateFromMegaTag1() {
+        LimelightHelpers.PoseEstimate limelightMeasurementMT1 = LimelightHelpers.getBotPoseEstimate_wpiRed("");
+        return limelightMeasurementMT1.pose;
+    }
+    
+    
     @Override
     public void periodic() {
 //        double tx = LimelightHelpers.getTX("");  // Horizontal offset from crosshair to target in degrees
@@ -34,21 +40,20 @@ public class Vision extends SubsystemBase {
         );
 
         // Get the pose estimate
-        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("");
+        LimelightHelpers.PoseEstimate limelightMeasurementMT2 = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("");
 
-        if (limelightMeasurement.pose.equals(Pose2d.kZero)) {
+        if (limelightMeasurementMT2.pose.equals(Pose2d.kZero)) {
             return;
         }
 
-        this.lastVisionObservation = limelightMeasurement.pose;
+        this.lastVisionObservation = new PoseEstimator.VisionPoseObservation(
+                limelightMeasurementMT2.timestampSeconds,
+                limelightMeasurementMT2.pose,
+                VisionConstants.VISION_LINEAR_STANDARD_DEVIATION_METERS,
+                VisionConstants.VISION_ANGULAR_STANDARD_DEVIATION_RAD);
 
         // Add it to your pose estimator
-        this.robotState.addVisionObservation(
-                new PoseEstimator.VisionPoseObservation(
-                        limelightMeasurement.timestampSeconds,
-                        limelightMeasurement.pose,
-                        VisionConstants.VISION_LINEAR_STANDARD_DEVIATION_METERS,
-                        VisionConstants.VISION_ANGULAR_STANDARD_DEVIATION_RAD)
-        );
+        this.robotState.addVisionObservation(this.lastVisionObservation);
+
     }
 }

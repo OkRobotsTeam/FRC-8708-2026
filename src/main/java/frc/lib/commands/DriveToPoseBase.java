@@ -143,9 +143,9 @@ public abstract class DriveToPoseBase extends Command {
             linearOutput * Math.sin(directionToTarget.getRadians()),
             angularOutput);
 
-        drive.runVelocity(
+        drive.runVelocityInternal(
             ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeed,
-                robotState.getEstimatedPose().getRotation()));
+                robotState.getEstimatedPose().getRotation()), false);
 
         Logger.recordOutput("DriveToPose/Target Pose", targetPose.get());
         Logger.recordOutput("DriveToPose/Distance To Target (m)", translationToTarget.getNorm());
