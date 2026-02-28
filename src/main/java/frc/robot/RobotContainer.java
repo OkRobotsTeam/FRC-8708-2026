@@ -243,7 +243,7 @@ public class RobotContainer {
         manipulatorController.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
 
 
-        driverController.povLeft().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
+        driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
                 new RotateToPose(
                         drive,
                         () -> FieldConstants.BLUE_GOAL_POSITION,
@@ -252,7 +252,7 @@ public class RobotContainer {
                 )
         );
 
-        driverController.povLeft().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Red)).whileTrue(
+        driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Red)).whileTrue(
                 new RotateToPose(
                         drive,
                         () -> FieldConstants.RED_GOAL_POSITION,
@@ -274,41 +274,24 @@ public class RobotContainer {
                                                 )))
                                 .ignoringDisable(true));
 
+        //TODO
+        // angle shooter down
 
+        driverController.rightBumper().toggleOnTrue(
+                new RotateToCardinalDirection(
+                        drive,
+                        Rotation2d.fromDegrees(45),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getLeftY()
+                )
+        );
 
 //        controller.b().whileTrue(
 //                Commands.runOnce(drive::test)
 //        );
-        // Lock to 0° when A button is held
-//        controller
-//                .a()
-//                .whileTrue(
-//                        DriveCommands.joystickDriveAtAngle(
-//                                drive,
-//                                () -> -controller.getLeftY(),
-//                                () -> -controller.getLeftX(),
-//                                () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-
-        // Pathfind to Pose when the Y button is pressed
-//        controller.y().onTrue(
-//                DriveCommands.pathFindToPose(() -> robotState.getEstimatedPose(),
-//                        new Pose2d(1, 4, Rotation2d.kZero),
-//                        PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
-//                        PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
-
-        // On-the-fly path with waypoints while the Right Bumper is held
-//        controller.rightBumper().whileTrue(
-//                new OnTheFlyPathCommand(drive, () -> robotState.getEstimatedPose(),
-//                        new ArrayList<>(Arrays.asList()), // List
-//                        // of
-//                        // waypoints
-//                        new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
-//                        MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
-//                        PathConstants.PATHGENERATION_ROT_TOLERANCE));
 
 
         LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
