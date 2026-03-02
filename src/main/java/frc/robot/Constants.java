@@ -31,11 +31,12 @@ import frc.robot.subsystems.Drive.DriveConstants;
  */
 public final class Constants {
     public static final Mode simMode = Mode.SIM;
-    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+    public static Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
     public static final boolean tuningMode = true;
 
     public static enum Mode {
+        ALPHA,
         /** Running on a real robot. */
         REAL,
 
@@ -54,7 +55,7 @@ public final class Constants {
         // TODO: Fill in with real serial number prefixes. Figure out by displaying/logging String
         // serial.
         public static final String compSerial = "0001";
-        public static final String alphaSerial = "0000";
+        public static final String alphaSerial = "031df993";
 
         static {
             if (Robot.isReal()) {
@@ -78,7 +79,26 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int SHOOTER_PORT = 0;
+        public static final int BOTTOM_ID = 1;
+        public static final int TOP_ID = 2;
+        public static final int ANGLER_ID = 0; //TODO UPDATEID
+        public static final double ANGLER_STARTING_POSITION = 0.0; //TODO UPDATE
+        public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
+        public static final int KP = 1;
+        public static final int KI = 0;
+        public static final int KD = 0;
+    }
+
+
+    public static final class IntakeConstants {
+        public static final int PICKUP_MOTOR_ID = 5;
+        public static final int PICKUP_ACTUATOR_ID = 6;
+        public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
+        public static final int KP = 1;
+        public static final int KI = 0;
+        public static final int KD = 0;
+        public static final int EXTENDED_POSITION = 0; //TODO GETPOSITION
+        public static final int RETRACTED_POSITION = 0; //TODO GETPOSITION
     }
 
     public static final class PathConstants {

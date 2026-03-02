@@ -36,6 +36,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.LoggedTunableNumber;
@@ -111,12 +113,13 @@ public class RobotContainer {
             // Handle exception as needed
             e.printStackTrace();
         }
+        registerNamedCommands();
+
         drive = DriveConstants.get();
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0));
 //        PathPlannerLogging.setLogActivePathCallback(poses -> logStupidThingThatWOntLog(poses,trajectoryConfig));
         PathPlannerLogging.setLogCurrentPoseCallback(pose -> Logger.recordOutput("PathPlanner/CurrentPose", pose));
         PathPlannerLogging.setLogTargetPoseCallback(pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
-
         AutoBuilder.configure(
                 RobotState.getInstance()::getEstimatedPose, // Robot pose supplier
                 RobotState.getInstance()::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -190,7 +193,6 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
-        registerNamedCommands();
 
         GamePieceVisualizer algae = new GamePieceVisualizer("Algae",
                 new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
@@ -224,23 +226,24 @@ public class RobotContainer {
                         () -> -driverController.getRightX()));
 
 
-        manipulatorController.rightBumper().onTrue(Commands.runOnce((shooter::topFaster), shooter));
-        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::topSlower), shooter));
-        manipulatorController.rightTrigger().onTrue(Commands.runOnce((shooter::bottomFaster), shooter));
-        manipulatorController.leftTrigger().onTrue(Commands.runOnce((shooter::bottomSlower), shooter));
-        manipulatorController.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
+        manipulatorController.rightBumper().onTrue(Commands.runOnce((shooter::faster), shooter));
+        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::slower), shooter));
+         manipulatorController.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
 
-        driverController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
-        driverController.a().onFalse(Commands.runOnce(intake::stop, intake));
-        driverController.x().onTrue(Commands.runOnce(() -> intake.runSpeed(0.5), intake));
-        driverController.x().onFalse(Commands.runOnce(intake::stop, intake));
-        driverController.povUp().onTrue(Commands.runOnce(intake::faster, intake));
-        driverController.povDown().onTrue(Commands.runOnce(intake::slower, intake));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
-        manipulatorController.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
-        manipulatorController.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
-        manipulatorController.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+        manipulatorController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
+        manipulatorController.a().onFalse(Commands.runOnce(intake::stop, intake));
+        manipulatorController.x().onTrue(Commands.runOnce(() -> intake.runSpeed(0.5), intake));
+        manipulatorController.x().onFalse(Commands.runOnce(intake::stop, intake));
+
+        manipulatorController.b().onTrue(Commands.runOnce(intake::extendIntake, intake));
+        manipulatorController.b().onFalse(Commands.runOnce(intake::retractIntake, intake));
+
+
+//        manipulatorController.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
+//        manipulatorController.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
+//        manipulatorController.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
+//        manipulatorController.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
 
 
         driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
@@ -275,7 +278,7 @@ public class RobotContainer {
                                 .ignoringDisable(true));
 
         //TODO
-        // angle shooter down
+        // angle shooter down button
 
         driverController.rightBumper().toggleOnTrue(
                 new RotateToCardinalDirection(
@@ -396,10 +399,14 @@ public class RobotContainer {
     }
 
     private void registerNamedCommands() {
-        NamedCommands.registerCommand("runIntake", Commands.runOnce(() -> intake.run()));
+        System.out.println("Registering Commands");
+        NamedCommands.registerCommand("runIntake", new InstantCommand(() -> intake.runSpeed(0.5)).andThen(() -> System.out.println("runIntake")));
+        NamedCommands.registerCommand("print", new PrintCommand("print"));
+
     }
 
     public void init() {
+
     }
 
     public void teleopInit() {
@@ -416,6 +423,8 @@ public class RobotContainer {
     public void periodic() {
         currentPoseField.setRobotPose(robotState.getEstimatedPose());
         currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation().robotPose());
+//        System.out.println("Serial Number: " + System.getenv("serialnum"));
+
     }
 
     public void teleopPeriodic() {

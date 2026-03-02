@@ -5,45 +5,66 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.LoggedTuneablePID;
+import frc.robot.Constants.IntakeConstants;
 
 /**
  * Subsystem to control two TalonFX motors independently (or optionally make the
  * top motor follow the Motor).
  */
 public class Intake extends SubsystemBase {
-    private static final int MOTOR_ID = 5;
-    private static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
 
-    private final TalonFX motor;
-    //private final TalonFX top;
+
+    public final LoggedTuneablePID positionPID = new LoggedTuneablePID("/Intake/PositionPID", IntakeConstants.KP, IntakeConstants.KI, IntakeConstants.KD);
+
+    private final TalonFX intakeMotor;
+    private final TalonFX intakeActuator;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
     double intakeSpeed = 0.5;
+    public int currentState = 0;
 
     public Intake() {
-        motor = new TalonFX(MOTOR_ID);
+        intakeMotor = new TalonFX(IntakeConstants.PICKUP_MOTOR_ID);
+        intakeActuator = new TalonFX(IntakeConstants.PICKUP_ACTUATOR_ID);
         var configs = new MotorOutputConfigs();
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
-        motor.getConfigurator().apply(configs);
+        intakeMotor.getConfigurator().apply(configs);
+        intakeActuator.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
 
-        motor.setPosition(0.0);
+        intakeMotor.setPosition(0.0);
         
     }
 
 
 
+    public void extendIntake() {
+        positionPID.setSetpoint(IntakeConstants.EXTENDED_POSITION);
+        currentState = 1;
+    }
+
+    public void retractIntake() {
+        positionPID.setSetpoint(IntakeConstants.RETRACTED_POSITION);
+        currentState = 0;
+    }
+
+
+    public void setMotors(double power) {
+        intakeActuator.set(power);
+    }
+
+
     public void setMotorPercent(double percent) {
-        motor.setControl(m_dutyCycle.withOutput(percent));
+        intakeMotor.setControl(m_dutyCycle.withOutput(percent));
     }
 
     public void stop() {
         setMotorPercent(0.0);
+        System.out.println("Stopping Intake");
     }
 
     public void run() {
@@ -53,18 +74,8 @@ public class Intake extends SubsystemBase {
 
     public void runSpeed(Double speed) {
         setMotorPercent(speed);
-        System.out.println("Running Intake");
+        System.out.println("Running Intake" + speed);
     }
-
-    public Command stopCommand() {
-        return new InstantCommand(this::stop,this);
-    }
-
-    public Command runCommand() {
-        return new InstantCommand(this::run,this);
-    }
-
-
 
     public void changeMotorSpeed(double input) {
         intakeSpeed = intakeSpeed + input;
@@ -87,6 +98,9 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+
+        double pidOutput = positionPID.calculate(intakeActuator.getPosition().getValueAsDouble());
+        setMotors(pidOutput);
     }
 
     @Override

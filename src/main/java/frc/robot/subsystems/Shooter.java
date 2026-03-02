@@ -7,60 +7,69 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.LoggedTuneablePID;
+import frc.robot.Constants.ShooterConstants;
 
 /**
  * Subsystem to control two TalonFX motors independently (or optionally make the
  * top motor follow the bottom).
  */
 public class Shooter extends SubsystemBase {
-    private static final int BOTTOM_ID = 1;
-    private static final int TOP_ID = 2;
-    private static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
+    public final LoggedTuneablePID rotationPID = new LoggedTuneablePID("/Shooter/RotationPID", ShooterConstants.KP, ShooterConstants.KI, ShooterConstants.KD);
 
-    private final TalonFX bottom;
-    private final TalonFX top;
+    private final TalonFX motor2;
+    private final TalonFX angler;
+    private final TalonFX motor1;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
     boolean isRunning = false;
-    double topSpeed = 0;
-    double bottomSpeed = 0;
+    double speed = 0;
 
     public Shooter() {
-        bottom = new TalonFX(BOTTOM_ID);
-        top = new TalonFX(TOP_ID);
+        motor2 = new TalonFX(ShooterConstants.BOTTOM_ID);
+        angler = new TalonFX(ShooterConstants.ANGLER_ID);
+        motor1 = new TalonFX(ShooterConstants.TOP_ID);
         var configs = new MotorOutputConfigs();
         configs.Inverted = InvertedValue.Clockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
-        top.getConfigurator().apply(configs);
+        motor1.getConfigurator().apply(configs);
+        angler.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
-        bottom.getConfigurator().apply(configs);
+        motor2.getConfigurator().apply(configs);
 
-        top.setPosition(0.0);
-        bottom.setPosition(0.0);
+        motor1.setPosition(0.0);
+        motor2.setPosition(0.0);
+        angler.setPosition(ShooterConstants.ANGLER_STARTING_POSITION);
+
+    }
+
+
+    public void setMotors(double power) {
+        angler.set(power);
     }
 
     /**
      * Set bottom motor output as percent (-1.0 .. 1.0).
      */
-    public void setBottomPercent(double percent) {
-        bottom.setControl(m_dutyCycle.withOutput(percent));
+    public void setMotor2Percent(double percent) {
+        motor2.setControl(m_dutyCycle.withOutput(percent));
     }
 
     /**
      * Set top motor output as percent (-1.0 .. 1.0).
      * If top was configured to follow bottom, calling this will override that behavior.
      */
-    public void setTopPercent(double percent) {
-        top.setControl(m_dutyCycle.withOutput(percent));
+    public void setMotor1Percent(double percent) {
+        motor1.setControl(m_dutyCycle.withOutput(percent));
     }
 
     /**
      * Set both motors to the same percent output.
      */
     public void setBothPercent(double percent) {
-        setBottomPercent(percent);
-        setTopPercent(percent);
+        setMotor2Percent(percent);
+        setMotor1Percent(percent);
     }
 
     /**
@@ -74,62 +83,42 @@ public class Shooter extends SubsystemBase {
         setBothPercent(0.5);
     }
 
-    public void setTopPercentIfRunning(double speed) {
+    public void setSpeedIfRunning(double speed) {
         if (isRunning) {
-            setTopPercent(speed);
+            setBothPercent(speed);
         } else {
-            setTopPercent(0);
+            setBothPercent(0);
         }
     }
 
-    public void setBottomPercentIfRunning(double speed) {
-        if (isRunning) {
-            setBottomPercent(speed);
-        } else {
-            setBottomPercent(0);
-        }
-    }
 
     public void toggleIsRunning() {
         isRunning = !isRunning;
-        setTopPercentIfRunning(topSpeed);
-        setBottomPercentIfRunning(bottomSpeed);
+        setSpeedIfRunning(speed);
     }
 
-    public void changeTopSpeed(double input) {
-        topSpeed = topSpeed + input;
-        if (topSpeed > 1) {
-            topSpeed = 1;
-        } else if (topSpeed < -1) {
-            topSpeed = -1;
+    public void changeSpeed(double input) {
+        speed = speed + input;
+        if (speed > 1) {
+            speed = 1;
+        } else if (speed < -1) {
+            speed = -1;
         }
-        setTopPercentIfRunning(topSpeed);
+        setSpeedIfRunning(speed);
     }
 
-    public void changeBottomSpeed(double input) {
-        bottomSpeed = bottomSpeed + input;
-        if (bottomSpeed > 1) {
-            bottomSpeed = 1;
-        } else if (bottomSpeed < -1) {
-            bottomSpeed = -1;
-        }
-        setBottomPercentIfRunning(bottomSpeed);
+
+    public void faster() {
+        changeSpeed(0.1);
     }
 
-    public void topFaster() {
-        changeTopSpeed(0.1);
+    public void slower() {
+        changeSpeed(-0.1);
     }
 
-    public void topSlower() {
-        changeTopSpeed(-0.1);
-    }
+    public void setAngle(double angle) {
+        rotationPID.setSetpoint(angle * 360.0);
 
-    public void bottomFaster() {
-        changeBottomSpeed(0.1);
-    }
-
-    public void bottomSlower() {
-        changeBottomSpeed(-0.1);
     }
 
     /**
@@ -161,6 +150,9 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+
+        double pidOutput = rotationPID.calculate(angler.getPosition().getValueAsDouble());
+        setMotors(pidOutput);
     }
 
 
