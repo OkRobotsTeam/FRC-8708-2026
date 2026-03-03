@@ -226,18 +226,26 @@ public class RobotContainer {
                         () -> -driverController.getRightX()));
 
 
-        manipulatorController.rightBumper().onTrue(Commands.runOnce((shooter::faster), shooter));
-        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::slower), shooter));
-         manipulatorController.y().onTrue(Commands.runOnce(shooter::toggleIsRunning, shooter));
+//        manipulatorController.rightBumper().onTrue(Commands.runOnce((shooter::faster), shooter));
+//        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::slower), shooter));
+        manipulatorController.a().onTrue(Commands.runOnce(shooter::setModeShooting, shooter));
+        manipulatorController.a().onFalse(Commands.runOnce(shooter::setModeIdling, shooter));
+        manipulatorController.b().onTrue(Commands.runOnce(shooter::toggleIdling, shooter));
 
+        manipulatorController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setAngle(0.5), shooter));
+        manipulatorController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setAngle(0), shooter));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
-        manipulatorController.a().onFalse(Commands.runOnce(intake::stop, intake));
-        manipulatorController.x().onTrue(Commands.runOnce(() -> intake.runSpeed(0.5), intake));
-        manipulatorController.x().onFalse(Commands.runOnce(intake::stop, intake));
-
-        manipulatorController.b().onTrue(Commands.runOnce(intake::extendIntake, intake));
-        manipulatorController.b().onFalse(Commands.runOnce(intake::retractIntake, intake));
+        manipulatorController.x().onTrue(Commands.runOnce(intake::extendIntake, intake));
+        manipulatorController.x().onFalse(Commands.runOnce(intake::retractIntake, intake));
+//
+//
+//        manipulatorController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
+//        manipulatorController.a().onFalse(Commands.runOnce(intake::stop, intake));
+//        manipulatorController.x().onTrue(Commands.runOnce(() -> intake.runSpeed(0.5), intake));
+//        manipulatorController.x().onFalse(Commands.runOnce(intake::stop, intake));
+//
+//        manipulatorController.b().onTrue(Commands.runOnce(intake::extendIntake, intake));
+//        manipulatorController.b().onFalse(Commands.runOnce(intake::retractIntake, intake));
 
 
 //        manipulatorController.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));

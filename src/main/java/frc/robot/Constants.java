@@ -21,6 +21,8 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.CounterBase;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystems.Drive.DriveConstants;
 
@@ -84,21 +86,35 @@ public final class Constants {
         public static final int ANGLER_ID = 0; //TODO UPDATEID
         public static final double ANGLER_STARTING_POSITION = 0.0; //TODO UPDATE
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
-        public static final int KP = 1;
-        public static final int KI = 0;
-        public static final int KD = 0;
+        public static final double FLYWHEEL_P = 0.1;
+        public static final double FLYWHEEL_I = 0;
+        public static final double FLYWHEEL_D = 0.01;
+        public static final double FLYWHEEL_V = 0.125;
+        public static final double ANGLER_P = 0.2;
+        public static final double ANGLER_I = 0;
+        public static final double ANGLER_D = 0.01;
+        public static final double ANGLER_V = 0.125;
+        public static final int MAXIMUM_RPM = 6000;
+        public static final int ENCODER_CHANNEL_A = 1;
+        public static final int ENCODER_CHANNEL_B = 2;
+        public static final boolean ENCODER_REVERSED = false;
+        public static final CounterBase.EncodingType ENCODER_ENCODING_TYPE = Encoder.EncodingType.k4X;
+        public static final int MAXIMUM_ANGULAR_ROTATIONS = 200; //TODO UPDATE
     }
 
 
     public static final class IntakeConstants {
-        public static final int PICKUP_MOTOR_ID = 5;
-        public static final int PICKUP_ACTUATOR_ID = 6;
+//        public static final int PICKUP_MOTOR_ID = 5;
+        public static final int PICKUP_MOTOR_ID = 0;
+        public static final int PICKUP_ACTUATOR_ID = 5;
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
-        public static final int KP = 1;
-        public static final int KI = 0;
-        public static final int KD = 0;
-        public static final int EXTENDED_POSITION = 0; //TODO GETPOSITION
+        public static final double KP = 0.2;
+        public static final double KI = 0;
+        public static final double KD = 0;
+        public static final double KV = 0.125;
+        public static final int EXTENDED_POSITION = 5; //TODO GETPOSITION
         public static final int RETRACTED_POSITION = 0; //TODO GETPOSITION
+        public static final double INTAKE_ROTATION_GEAR_RATIO = 19.42;
     }
 
     public static final class PathConstants {

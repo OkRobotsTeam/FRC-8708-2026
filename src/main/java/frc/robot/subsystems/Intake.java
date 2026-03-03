@@ -1,12 +1,16 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.LoggedTuneablePID;
+import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 /**
@@ -16,13 +20,14 @@ import frc.robot.Constants.IntakeConstants;
 public class Intake extends SubsystemBase {
 
 
-    public final LoggedTuneablePID positionPID = new LoggedTuneablePID("/Intake/PositionPID", IntakeConstants.KP, IntakeConstants.KI, IntakeConstants.KD);
+//    public final LoggedTuneablePID positionPID = new LoggedTuneablePID("/Intake/PositionPID", IntakeConstants.KP, IntakeConstants.KI, IntakeConstants.KD);
 
     private final TalonFX intakeMotor;
     private final TalonFX intakeActuator;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
     double intakeSpeed = 0.5;
     public int currentState = 0;
+    private double targetPosition = 0;
 
     public Intake() {
         intakeMotor = new TalonFX(IntakeConstants.PICKUP_MOTOR_ID);
@@ -37,18 +42,27 @@ public class Intake extends SubsystemBase {
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
 
         intakeMotor.setPosition(0.0);
+
+
+        TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration(); // Start with factory defaults
+        Slot0Configs slot0Configs = new Slot0Configs();
+        slot0Configs.kP = IntakeConstants.KP;
+        slot0Configs.kV = IntakeConstants.KV;
+        slot0Configs.kD = IntakeConstants.KD;
         
     }
 
 
 
     public void extendIntake() {
-        positionPID.setSetpoint(IntakeConstants.EXTENDED_POSITION);
+//        positionPID.setSetpoint(IntakeConstants.EXTENDED_POSITION);
+        targetPosition = IntakeConstants.EXTENDED_POSITION;
         currentState = 1;
     }
 
     public void retractIntake() {
-        positionPID.setSetpoint(IntakeConstants.RETRACTED_POSITION);
+//        positionPID.setSetpoint(IntakeConstants.RETRACTED_POSITION);
+        targetPosition = IntakeConstants.RETRACTED_POSITION;
         currentState = 0;
     }
 
@@ -99,8 +113,12 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
 
-        double pidOutput = positionPID.calculate(intakeActuator.getPosition().getValueAsDouble());
-        setMotors(pidOutput);
+//        double pidOutput = positionPID.calculate(intakeActuator.getPosition().getValueAsDouble());
+//        setMotors(pidOutput);
+
+        intakeActuator.setControl(new PositionDutyCycle(targetPosition));
+        System.out.println("Target position: " + targetPosition + " Current position: " + intakeActuator.getPosition());
+
     }
 
     @Override
