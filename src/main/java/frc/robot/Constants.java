@@ -81,9 +81,11 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int BOTTOM_ID = 1;
-        public static final int TOP_ID = 2;
-        public static final int ANGLER_ID = 0; //TODO UPDATEID
+        public static final int MOTOR_2_ID = 5;
+        public static final int MOTOR_1_ID = 0;
+        public static final int ANGLER_ID = 0; //TODO UPDATE ID
+        public static final int INJECTOR_ID = 0; //TODO UPDATE ID
+        public static final int TRANSFER_ID = 0; //TODO UPDATE ID
         public static final double ANGLER_STARTING_POSITION = 0.0; //TODO UPDATE
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
         public static final double FLYWHEEL_P = 0.1;
@@ -94,26 +96,30 @@ public final class Constants {
         public static final double ANGLER_I = 0;
         public static final double ANGLER_D = 0.01;
         public static final double ANGLER_V = 0.125;
+        public static final double TRANSFER_P = 0.1;
+        public static final double TRANSFER_D = 0.01;
+        public static final double TRANSFER_V = 0.125;
         public static final int MAXIMUM_RPM = 6000;
         public static final int ENCODER_CHANNEL_A = 1;
         public static final int ENCODER_CHANNEL_B = 2;
         public static final boolean ENCODER_REVERSED = false;
         public static final CounterBase.EncodingType ENCODER_ENCODING_TYPE = Encoder.EncodingType.k4X;
-        public static final int MAXIMUM_ANGULAR_ROTATIONS = 200; //TODO UPDATE
+        public static final int MAXIMUM_ANGULAR_ROTATIONS = 10; //TODO UPDATE
+        public static final double SPEED_TOLERANCE = 5; //TODO UPDATE
     }
 
 
     public static final class IntakeConstants {
 //        public static final int PICKUP_MOTOR_ID = 5;
         public static final int PICKUP_MOTOR_ID = 0;
-        public static final int PICKUP_ACTUATOR_ID = 5;
+        public static final int PICKUP_ACTUATOR_ID = 0;
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
         public static final double KP = 0.2;
         public static final double KI = 0;
         public static final double KD = 0;
         public static final double KV = 0.125;
-        public static final int EXTENDED_POSITION = 5; //TODO GETPOSITION
-        public static final int RETRACTED_POSITION = 0; //TODO GETPOSITION
+        public static final int EXTENDED_POSITION = 5; //TODO GET POSITION
+        public static final int RETRACTED_POSITION = 0; //TODO GET POSITION
         public static final double INTAKE_ROTATION_GEAR_RATIO = 19.42;
     }
 
@@ -127,10 +133,6 @@ public final class Constants {
         public static final Angle PATHGENERATION_ROT_TOLERANCE = Degrees.of(5.0);
         // Tune the maxAcceleration, maxAngularVelocityRadPerSec, and
         // maxAngularAccelerationRacPerSecSq constraints for pathfinding
-        public static final PathConstraints ON_THE_FLY_PATH_CONSTRAINTS = new PathConstraints(
-            DriveConstants.kSpeedAt12Volts.magnitude(),
-            4.0,
-            Units.degreesToRadians(540),
-            Units.degreesToRadians(720));
+
     }
 }

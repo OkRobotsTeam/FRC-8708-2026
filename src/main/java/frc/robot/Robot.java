@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Drive.DriveConstants;
+import frc.robot.subsystems.Drive.DriveConstantsComp;
 import frc.robot.util.BallSimulator;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -105,11 +106,13 @@ public class Robot extends LoggedRobot {
                         new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
             }
         }
+        DriveConstants.init();
 
         // Start AdvantageKit logger
         Logger.start();
 
         // Check for valid swerve config
+
         var modules = new SwerveModuleConstants[] {
                 DriveConstants.FrontLeft,
                 DriveConstants.FrontRight,

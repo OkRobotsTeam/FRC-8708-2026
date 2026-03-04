@@ -106,6 +106,7 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
     public RobotContainer() {
+        drive = DriveConstants.get();
         RobotConfig config = null;
         try {
             config = RobotConfig.fromGUISettings();
@@ -115,7 +116,10 @@ public class RobotContainer {
         }
         registerNamedCommands();
 
-        drive = DriveConstants.get();
+        // Detect if controllers are missing / Stop multiple warnings
+        DriverStation.silenceJoystickConnectionWarning(true);
+
+
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0));
 //        PathPlannerLogging.setLogActivePathCallback(poses -> logStupidThingThatWOntLog(poses,trajectoryConfig));
         PathPlannerLogging.setLogCurrentPoseCallback(pose -> Logger.recordOutput("PathPlanner/CurrentPose", pose));
@@ -197,9 +201,6 @@ public class RobotContainer {
         GamePieceVisualizer algae = new GamePieceVisualizer("Algae",
                 new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
 
-
-        // Detect if controllers are missing / Stop multiple warnings
-        DriverStation.silenceJoystickConnectionWarning(true);
     }
 
     /**
@@ -230,13 +231,18 @@ public class RobotContainer {
 //        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::slower), shooter));
         manipulatorController.a().onTrue(Commands.runOnce(shooter::setModeShooting, shooter));
         manipulatorController.a().onFalse(Commands.runOnce(shooter::setModeIdling, shooter));
-        manipulatorController.b().onTrue(Commands.runOnce(shooter::toggleIdling, shooter));
+        manipulatorController.b().onTrue(Commands.runOnce(shooter::toggleIdling, shooter).andThen(Commands.runOnce(transfer::run, transfer)));
 
         manipulatorController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setAngle(0.5), shooter));
         manipulatorController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setAngle(0), shooter));
+//
+//        manipulatorController.x().onTrue(Commands.runOnce(intake::extendIntake, intake));
+//        manipulatorController.x().onFalse(Commands.runOnce(intake::retractIntake, intake));
+//
+//        manipulatorController.y().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(50), shooter));
+//        manipulatorController.y().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0), shooter));
 
-        manipulatorController.x().onTrue(Commands.runOnce(intake::extendIntake, intake));
-        manipulatorController.x().onFalse(Commands.runOnce(intake::retractIntake, intake));
+        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.toggleAngles(0.2, 0.6), shooter));
 //
 //
 //        manipulatorController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
@@ -247,11 +253,6 @@ public class RobotContainer {
 //        manipulatorController.b().onTrue(Commands.runOnce(intake::extendIntake, intake));
 //        manipulatorController.b().onFalse(Commands.runOnce(intake::retractIntake, intake));
 
-
-//        manipulatorController.a().onTrue(Commands.runOnce(() -> transfer.setBothPercent(0.5)));
-//        manipulatorController.a().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
-//        manipulatorController.b().onTrue(Commands.runOnce(() -> transfer.setBothPercent(-0.5)));
-//        manipulatorController.b().onFalse(Commands.runOnce(() -> transfer.setBothPercent(0.0)));
 
 
         driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
@@ -285,8 +286,6 @@ public class RobotContainer {
                                                 )))
                                 .ignoringDisable(true));
 
-        //TODO
-        // angle shooter down button
 
         driverController.rightBumper().toggleOnTrue(
                 new RotateToCardinalDirection(

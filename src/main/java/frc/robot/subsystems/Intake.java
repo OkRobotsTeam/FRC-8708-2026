@@ -117,7 +117,7 @@ public class Intake extends SubsystemBase {
 //        setMotors(pidOutput);
 
         intakeActuator.setControl(new PositionDutyCycle(targetPosition));
-        System.out.println("Target position: " + targetPosition + " Current position: " + intakeActuator.getPosition());
+        //System.out.println("Target position: " + targetPosition + " Current position: " + intakeActuator.getPosition());
 
     }
 

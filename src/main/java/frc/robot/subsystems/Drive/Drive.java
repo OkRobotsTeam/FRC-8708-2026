@@ -17,7 +17,6 @@ package frc.robot.subsystems.Drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -29,7 +28,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -62,16 +60,10 @@ public class Drive extends SubsystemBase {
 
     // TunerConstants doesn't include these constants, so they are declared locally
     static final double ODOMETRY_FREQUENCY =
-        new CANBus(DriveConstants.DrivetrainConstants.CANBusName).isNetworkFD()
+        DriveConstantsComp.kCANBus.isNetworkFD()
             ? 250.0
             : 100.0;
-    public static final double DRIVE_BASE_RADIUS = Math.max(
-        Math.max(
-            Math.hypot(DriveConstants.FrontLeft.LocationX, DriveConstants.FrontLeft.LocationY),
-            Math.hypot(DriveConstants.FrontRight.LocationX, DriveConstants.FrontRight.LocationY)),
-        Math.max(
-            Math.hypot(DriveConstants.BackLeft.LocationX, DriveConstants.BackLeft.LocationY),
-            Math.hypot(DriveConstants.BackRight.LocationX, DriveConstants.BackRight.LocationY)));
+
 
     // PathPlanner config constants
     private static final double ROBOT_MASS_KG = 74.088;
@@ -81,15 +73,16 @@ public class Drive extends SubsystemBase {
         ROBOT_MASS_KG,
         ROBOT_MOI,
         new ModuleConfig(
-            DriveConstants.FrontLeft.WheelRadius,
-            DriveConstants.kSpeedAt12Volts.in(MetersPerSecond),
+            DriveConstantsComp.FrontLeft.WheelRadius,
+            DriveConstantsComp.kSpeedAt12Volts.in(MetersPerSecond),
             WHEEL_COF,
             DCMotor.getKrakenX60Foc(1)
-                .withReduction(DriveConstants.FrontLeft.DriveMotorGearRatio),
-            DriveConstants.FrontLeft.SlipCurrent,
+                .withReduction(DriveConstantsComp.FrontLeft.DriveMotorGearRatio),
+            DriveConstantsComp.FrontLeft.SlipCurrent,
             1),
         getModuleTranslations());
 
+    public static double driveBaseRadius;
     static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -110,14 +103,22 @@ public class Drive extends SubsystemBase {
         ModuleIO brModuleIO)
     {
         this.gyroIO = gyroIO;
-        modules[0] = new Module(flModuleIO, 0, DriveConstants.FrontLeft);
-        modules[1] = new Module(frModuleIO, 1, DriveConstants.FrontRight);
-        modules[2] = new Module(blModuleIO, 2, DriveConstants.BackLeft);
-        modules[3] = new Module(brModuleIO, 3, DriveConstants.BackRight);
+        modules[0] = new Module(flModuleIO, 0, DriveConstantsComp.FrontLeft);
+        modules[1] = new Module(frModuleIO, 1, DriveConstantsComp.FrontRight);
+        modules[2] = new Module(blModuleIO, 2, DriveConstantsComp.BackLeft);
+        modules[3] = new Module(brModuleIO, 3, DriveConstantsComp.BackRight);
 
         // Usage reporting for swerve template
         HAL.report(tResourceType.kResourceType_RobotDrive,
             tInstances.kRobotDriveSwerve_AdvantageKit);
+
+        driveBaseRadius = Math.max(
+                Math.max(
+                        Math.hypot(DriveConstantsComp.FrontLeft.LocationX, DriveConstantsComp.FrontLeft.LocationY),
+                        Math.hypot(DriveConstantsComp.FrontRight.LocationX, DriveConstantsComp.FrontRight.LocationY)),
+                Math.max(
+                        Math.hypot(DriveConstantsComp.BackLeft.LocationX, DriveConstantsComp.BackLeft.LocationY),
+                        Math.hypot(DriveConstantsComp.BackRight.LocationX, DriveConstantsComp.BackRight.LocationY)));
 
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
@@ -144,6 +145,7 @@ public class Drive extends SubsystemBase {
                 (targetPose) -> {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
                 });
+
         }
 
         // Configure SysId
@@ -241,7 +243,7 @@ public class Drive extends SubsystemBase {
 
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstants.kSpeedAt12Volts);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstantsComp.kSpeedAt12Volts);
 
         // Log unoptimized setpoints and setpoint speeds
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -366,27 +368,27 @@ public class Drive extends SubsystemBase {
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec()
     {
-        return DriveConstants.kSpeedAt12Volts.in(MetersPerSecond);
+        return DriveConstantsComp.kSpeedAt12Volts.in(MetersPerSecond);
     }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec()
     {
-        return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
+        return getMaxLinearSpeedMetersPerSec() / driveBaseRadius;
     }
 
     /** Returns an array of module translations. */
     public static Translation2d[] getModuleTranslations()
     {
         return new Translation2d[] {
-                new Translation2d(DriveConstants.FrontLeft.LocationX,
-                    DriveConstants.FrontLeft.LocationY),
-                new Translation2d(DriveConstants.FrontRight.LocationX,
-                    DriveConstants.FrontRight.LocationY),
-                new Translation2d(DriveConstants.BackLeft.LocationX,
-                    DriveConstants.BackLeft.LocationY),
-                new Translation2d(DriveConstants.BackRight.LocationX,
-                    DriveConstants.BackRight.LocationY)
+                new Translation2d(DriveConstantsComp.FrontLeft.LocationX,
+                    DriveConstantsComp.FrontLeft.LocationY),
+                new Translation2d(DriveConstantsComp.FrontRight.LocationX,
+                    DriveConstantsComp.FrontRight.LocationY),
+                new Translation2d(DriveConstantsComp.BackLeft.LocationX,
+                    DriveConstantsComp.BackLeft.LocationY),
+                new Translation2d(DriveConstantsComp.BackRight.LocationX,
+                    DriveConstantsComp.BackRight.LocationY)
         };
     }
 
