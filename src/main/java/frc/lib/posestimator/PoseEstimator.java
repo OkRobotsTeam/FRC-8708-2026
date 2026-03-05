@@ -18,6 +18,8 @@ package frc.lib.posestimator;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.Optional;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -104,6 +106,10 @@ public class PoseEstimator {
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
 
         estimatedPose = estimatedPose.exp(twist);
+
+        double newX = MathUtil.clamp(estimatedPose.getTranslation().getX(), 0.27, 16.1);
+        double newY = MathUtil.clamp(estimatedPose.getTranslation().getY(), 0.27, 8);
+        estimatedPose = new Pose2d(newX, newY, estimatedPose.getRotation());
     }
 
     /**

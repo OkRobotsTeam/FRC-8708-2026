@@ -83,10 +83,12 @@ public abstract class RotateToPoseBase extends Command {
                         .minus(currentPose.getTranslation())
                         .getAngle();
 
+        Rotation2d desiredAngle = angleToTarget.rotateBy(Rotation2d.fromDegrees(180));
+
         double angularOutput = clamp(
                 angularController.calculate(
                     currentPose.getRotation().getRadians(),
-                    angleToTarget.getRadians()),
+                    desiredAngle.getRadians()),
                 -0.6, 0.6);
 
         Logger.recordOutput("/RotateToPose/angularController/targetTranslation", new Pose2d(targetTranslation.get(), Rotation2d.kZero));
@@ -98,6 +100,7 @@ public abstract class RotateToPoseBase extends Command {
 
         DriveCommands.joystickDrive(drive, joystickYInput, joystickXInput, () -> angularOutput, false);
     }
+
 
     // Returns true when the command should end.
     @Override

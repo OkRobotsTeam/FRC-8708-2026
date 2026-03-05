@@ -7,14 +7,14 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
 import java.util.List;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
+
+import static edu.wpi.first.units.Units.*;
 
 /**
  * Contains various field dimensions and useful reference points. All units are in meters and poses
@@ -35,6 +35,11 @@ public class FieldConstants {
 
     public static final Translation2d BLUE_GOAL_POSITION = FIELD_CENTER.minus(new Translation2d(Inches.of(143.5).in(Meters), 0.0));
     public static final Translation2d RED_GOAL_POSITION = FIELD_CENTER.plus(new Translation2d(Inches.of(143.5).in(Meters), 0.0));
+
+    public static final Translation2d RED_LEFT_AIM_POSITION = RED_GOAL_POSITION.plus(new Translation2d(Meters.of(2).in(Meters), Meters.of(2).in(Meters)));
+    public static final Translation2d RED_RIGHT_AIM_POSITION = RED_GOAL_POSITION.plus(new Translation2d(Meters.of(2).in(Meters), Meters.of(-2).in(Meters)));
+    public static final Translation2d BLUE_LEFT_AIM_POSITION = BLUE_GOAL_POSITION.minus(new Translation2d(Meters.of(2).in(Meters), Meters.of(-2).in(Meters)));
+    public static final Translation2d BLUE_RIGHT_AIM_POSITION = BLUE_GOAL_POSITION.minus(new Translation2d(Meters.of(2).in(Meters), Meters.of(2).in(Meters)));
 
     public static final Distance ALGAE_DIAMETER = Meters.of(.41);
 

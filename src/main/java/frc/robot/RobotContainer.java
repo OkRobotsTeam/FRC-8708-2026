@@ -191,6 +191,8 @@ public class RobotContainer {
 
         SmartDashboard.putData("Current Pose", currentPoseField);
 
+
+
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
                 robotState.getEstimatedPose().getTranslation(),
                 FieldConstants.ALLIANCE_STATION_POLYGON));
@@ -243,8 +245,7 @@ public class RobotContainer {
 //        manipulatorController.y().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0), shooter));
 
         manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.toggleAngles(0.2, 0.6), shooter));
-//
-//
+
 //        manipulatorController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
 //        manipulatorController.a().onFalse(Commands.runOnce(intake::stop, intake));
 //        manipulatorController.x().onTrue(Commands.runOnce(() -> intake.runSpeed(0.5), intake));
@@ -253,25 +254,40 @@ public class RobotContainer {
 //        manipulatorController.b().onTrue(Commands.runOnce(intake::extendIntake, intake));
 //        manipulatorController.b().onFalse(Commands.runOnce(intake::retractIntake, intake));
 
+        manipulatorController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
+        manipulatorController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
+
+        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::angleUp, shooter));
+        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 
 
-        driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
+        driverController.leftBumper().whileTrue(
                 new RotateToPose(
                         drive,
-                        () -> FieldConstants.BLUE_GOAL_POSITION,
+                        () -> shooter.calculateShootingPosition(),
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getLeftY()
                 )
         );
+//
+//        driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)).whileTrue(
+//                new RotateToPose(
+//                        drive,
+//                        () -> FieldConstants.BLUE_GOAL_POSITION,
+//                        () -> -driverController.getLeftX(),
+//                        () -> -driverController.getLeftY()
+//                )
+//        );
 
-        driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Red)).whileTrue(
-                new RotateToPose(
-                        drive,
-                        () -> FieldConstants.RED_GOAL_POSITION,
-                        () -> -driverController.getLeftX(),
-                        () -> -driverController.getLeftY()
-                )
-        );
+//
+//        driverController.leftBumper().and(() -> (DriverStation.getAlliance().get() == DriverStation.Alliance.Red)).whileTrue(
+//                new RotateToPose(
+//                        drive,
+//                        () -> FieldConstants.RED_GOAL_POSITION,
+//                        () -> -driverController.getLeftX(),
+//                        () -> -driverController.getLeftY()
+//                )
+//        );
 
 
         // Reset gyro to 0° when B button is pressed
@@ -431,7 +447,8 @@ public class RobotContainer {
         currentPoseField.setRobotPose(robotState.getEstimatedPose());
         currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation().robotPose());
 //        System.out.println("Serial Number: " + System.getenv("serialnum"));
-
+        SmartDashboard.putNumber("Shooter Speed", (int) shooter.speed);
+        SmartDashboard.putNumber("Shooter Angle", (int) (shooter.anglerPosition * 100));
     }
 
     public void teleopPeriodic() {
