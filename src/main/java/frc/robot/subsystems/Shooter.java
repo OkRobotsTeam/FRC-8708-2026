@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.FieldConstants;
@@ -32,59 +31,59 @@ public class Shooter extends SubsystemBase {
 //    public final LoggedTuneablePID shooterPID = new LoggedTuneablePID("/Shooter/ShooterPID", ShooterConstants.FLYWHEEL_P, ShooterConstants.FLYWHEEL_I, ShooterConstants.FLYWHEEL_D);
     Encoder encoder = new Encoder(ShooterConstants.ENCODER_CHANNEL_A, ShooterConstants.ENCODER_CHANNEL_B, ShooterConstants.ENCODER_REVERSED, ShooterConstants.ENCODER_ENCODING_TYPE);
 
-    private final TalonFX shooterMotor1;
-    private final TalonFX shooterMotor2;
-    private final TalonFX angler;
+    private final TalonFX flywheelMotor1;
+    private final TalonFX flywheelMotor2;
+    private final TalonFX hood;
     private final TalonFX injector;
     private final TalonFX transfer;
 
     private final VelocityDutyCycle velocityDutyCycle = new VelocityDutyCycle(0);
     private final DutyCycleOut dutyCycleOut = new DutyCycleOut(0);
     boolean isRunning = false;
-    public double manualSpeed = 0;
-    public double speed = 0;
-    private enum Mode {
-        STOPPED,
-        IDLING,
-        SHOOTING,
-        MANUAL
-    }
-    private Mode mode = Mode.STOPPED;
 
+
+
+    boolean isShooting = false;
+    public boolean idleWhenNotShooting;
+    public boolean autoSpeedMode;
+    public boolean autoHoodAngle;
+
+    public double motorSpeed = 0;
+    public double manualSpeed = 0;
     private double automaticSpeed = 0.0;
-    public double zoneSpeed = 0.0;
-    private double automaticAngle = 0.0;
 
     private final RobotState robotState = RobotState.getInstance();
 
-    public double anglerMotorPosition = 0;
-    public double anglerPosition = 0;
+    public double automaticHoodPosition = 0.0;
+    public double hoodMotorPosition = 0;
+    public double hoodPosition = 0;
+    public double manualHoodPosition = 0;
 
     private double encoderOffset = 0;
 
 
     public Shooter() {
-        shooterMotor1 = new TalonFX(ShooterConstants.MOTOR_1_ID);
-        shooterMotor2 = new TalonFX(ShooterConstants.MOTOR_2_ID);
-        angler = new TalonFX(ShooterConstants.ANGLER_ID);
+        flywheelMotor1 = new TalonFX(ShooterConstants.MOTOR_1_ID);
+        flywheelMotor2 = new TalonFX(ShooterConstants.MOTOR_2_ID);
+        hood = new TalonFX(ShooterConstants.HOOD_ID);
         injector = new TalonFX(ShooterConstants.INJECTOR_ID);
         transfer = new TalonFX(ShooterConstants.TRANSFER_ID);
         var configs = new MotorOutputConfigs();
         configs.Inverted = InvertedValue.Clockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
-        shooterMotor1.getConfigurator().apply(configs);
-        angler.getConfigurator().apply(configs);
+        flywheelMotor1.getConfigurator().apply(configs);
+        hood.getConfigurator().apply(configs);
         injector.getConfigurator().apply(configs);
         transfer.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
-        shooterMotor2.getConfigurator().apply(configs);
-        shooterMotor2.setControl(new Follower(shooterMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
+        flywheelMotor2.getConfigurator().apply(configs);
+        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
 
-        shooterMotor1.setPosition(0.0);
-        shooterMotor2.setPosition(0.0);
-        angler.setPosition(ShooterConstants.ANGLER_STARTING_POSITION);
+        flywheelMotor1.setPosition(0.0);
+        flywheelMotor2.setPosition(0.0);
+        hood.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
 
         encoderOffset = encoder.getDistance();
 
@@ -94,52 +93,68 @@ public class Shooter extends SubsystemBase {
         slot0Configs.kV = ShooterConstants.FLYWHEEL_V;
         slot0Configs.kD = ShooterConstants.FLYWHEEL_D;
 
-        shooterMotor1.getConfigurator().apply(slot0Configs);
-        shooterMotor2.getConfigurator().apply(slot0Configs);
+        flywheelMotor1.getConfigurator().apply(slot0Configs);
+        flywheelMotor2.getConfigurator().apply(slot0Configs);
 
-        slot0Configs.kP = ShooterConstants.ANGLER_P;
-        slot0Configs.kV = ShooterConstants.ANGLER_V;
-        slot0Configs.kD = ShooterConstants.ANGLER_D;
+        slot0Configs.kP = ShooterConstants.HOOD_P;
+        slot0Configs.kV = ShooterConstants.HOOD_V;
+        slot0Configs.kD = ShooterConstants.HOOD_D;
 
-        angler.getConfigurator().apply(slot0Configs);
+        hood.getConfigurator().apply(slot0Configs);
 
 //        slot0Configs.kP = ShooterConstants.TRANSFER_P;
 //        slot0Configs.kV = ShooterConstants.TRANSFER_V;
 //        slot0Configs.kD = ShooterConstants.TRANSFER_D;
     }
 
-    public void setModeStopped () {
-        mode = Mode.STOPPED;
-        System.out.println("setModeStopped");
+    public void setShooterModeStopped() {
+        idleWhenNotShooting = false;
+        System.out.println("setShooterModeStopped");
     }
 
-    public void setModeIdling () {
-        mode = Mode.IDLING;
-        System.out.println("setModeIdling");
-
-    }
-
-    public void setModeShooting () {
-        mode = Mode.SHOOTING;
-        System.out.println("setModeShooting");
-
-    }
-
-    public void setModeManual () {
-        mode = Mode.MANUAL;
-        System.out.println("setModeManual");
-
+    public void setShooterModeIdling() {
+        idleWhenNotShooting = true;
+        System.out.println("setShooterModeIdling");
+        updateFlywheelSpeed();
     }
 
     public void toggleIdling () {
-        switch (mode) {
-            case STOPPED, MANUAL -> setModeIdling();
-            case IDLING, SHOOTING -> setModeStopped();
-        }
+        System.out.println("toggleIdling");
+        idleWhenNotShooting = !idleWhenNotShooting;
+        updateFlywheelSpeed();
     }
 
-    public void setAnglerMotor(double power) {
-        angler.set(power);
+    public void setShooterModeShooting() {
+        isShooting = true;
+        System.out.println("setShooterModeShooting");
+    }
+
+    public void setShooterModeManual() {
+        autoSpeedMode = false;
+        System.out.println("setShooterModeManual");
+
+    }
+
+    public void setHoodModeAutomatic() {
+        autoSpeedMode = true;
+        System.out.println("setHoodModeAutomatic");
+    }
+
+    public void setHoodModeManual() {
+        autoHoodAngle = false;
+        System.out.println("setHoodModeManual");
+    }
+
+    public void toggleAutoEverything () {
+        if (autoSpeedMode || autoHoodAngle) {
+            autoSpeedMode = false;
+            autoHoodAngle = false;
+        } else {
+            autoSpeedMode = true;
+            autoHoodAngle = true;
+        }
+        updateHoodAngle();
+        updateFlywheelSpeed();
     }
 
     public void setInjectorMotor(double speed) {
@@ -150,99 +165,51 @@ public class Shooter extends SubsystemBase {
         transfer.setControl(dutyCycleOut.withOutput(speed));
     }
 
-    /**
-     * Set both motors to the same percent output.
-     */
-    public void setBothPercent(double percent) {
-        //shooterMotor2.setControl(new VelocityVoltage(percent));
-        Logger.recordOutput("Shooter/FlywheelSpeed", percent);
-        shooterMotor1.setControl(new VelocityVoltage(percent));
-        speed = percent;
-//        System.out.println("setting both percent to " + percent);
-
+    public void setManualSpeed(double input) {
+        manualSpeed = MathUtil.clamp(input, 0, 1);
+        updateFlywheelSpeed();
     }
 
-    /**
-     * Stop both motors (zero output).
-     */
-    public void stop() {
-        setBothPercent(0.0);
-    }
-
-    public void run() {
-        setBothPercent(0.5);
-    }
-
-    public void setSpeedIfRunning(double speed) {
-        if (isRunning) {
-            setBothPercent(speed);
-        } else {
-            setBothPercent(0);
-        }
-    }
-
-
-    public void toggleIsRunning() {
-        isRunning = !isRunning;
-        setSpeedIfRunning(manualSpeed);
-    }
-
-    public void changeSpeed(double input) {
-        manualSpeed = manualSpeed + input;
-        if (manualSpeed > 1) {
-            manualSpeed = 1;
-        } else if (manualSpeed < 0) {
-            manualSpeed = 0;
-        }
-        setSpeedIfRunning(manualSpeed);
-    }
-
-    public void changeAngle(double input) {
-        anglerPosition = anglerPosition + input;
-        if (anglerPosition > 1) {
-            anglerPosition = 1;
-        } else if (anglerPosition < 0) {
-            anglerPosition = 0;
-        }
-        setAngle(anglerPosition);
+    public void setManualAngle(double input) {
+        manualHoodPosition = MathUtil.clamp(input, 0, 1);
+        updateHoodAngle();
     }
 
     public void faster() {
-        setModeManual();
-        changeSpeed(0.05);
+        setManualSpeed(manualSpeed + 0.05);
     }
 
     public void slower() {
-        setModeManual();
-        changeSpeed(-0.05);
+        setManualSpeed(manualSpeed - 0.05);
     }
 
     public void angleUp() {
-        changeAngle(0.05);
+        setManualAngle(manualHoodPosition + .1);
     }
 
     public void angleDown() {
-        changeAngle(-0.05);
+        setManualAngle(manualHoodPosition - 0.1);
     }
 
-    public void setAngle(double position) {
-//        rotationPID.setSetpoint(angle * 360.0);
-        System.out.println("setAngle" +  position);
-        anglerPosition = position;
-        anglerMotorPosition = position * ShooterConstants.MAXIMUM_ANGULAR_ROTATIONS;
-        Logger.recordOutput("Shooter/Angler", anglerMotorPosition);
-
-    }
-
-    public void toggleAngles (double firstAngle, double secondAngle) {
-        if (!MathUtil.isNear(secondAngle, anglerPosition, 0.05)) {
-            setAngle(secondAngle);
+    public void updateHoodAngle() {
+        if (isShooting) {
+            if (autoHoodAngle) {
+                autoCalculateHoodAngle();
+                hoodPosition = automaticHoodPosition;
+            } else {
+                hoodPosition = manualHoodPosition;
+            }
         } else {
-            setAngle(firstAngle);
+            hoodPosition = 0;
         }
+        hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
+        hoodMotorPosition = hoodPosition * ShooterConstants.MAXIMUM_ANGULAR_ROTATIONS;
+        hood.setControl(new PositionDutyCycle(hoodMotorPosition - encoderOffset));
+        Logger.recordOutput("Shooter/Angler", hoodMotorPosition);
+
     }
 
-    public void calculateAutomaticAngle () {
+    public void autoCalculateHoodAngle() {
         Pose2d currentPose = robotState.getEstimatedPose();
         Translation2d target;
         double distance;
@@ -253,10 +220,46 @@ public class Shooter extends SubsystemBase {
         }
         distance = target.getDistance(currentPose.getTranslation());
 
-        automaticAngle = MathUtil.clamp(distance * 20, 0, 100);
+        automaticHoodPosition = MathUtil.clamp(distance * 20, 0, 100);
     }
 
-    public void calculateAutomaticSpeed() {
+    public void updateFlywheelSpeed() {
+        if (autoSpeedMode) {
+            calculateAutomaticFlywheelSpeed();
+            if (inOurZone(robotState.getEstimatedPose())) {
+                if (isShooting) {
+                    setFlywheelSpeedPercent(automaticSpeed);
+                } else if (idleWhenNotShooting) {
+                    setFlywheelSpeedPercent(automaticSpeed * 0.6);
+                } else {
+                    setFlywheelSpeedPercent(0);
+                }
+            } else {
+                if (isShooting) {
+                    setFlywheelSpeedPercent(ShooterConstants.SPEED_WHEN_OUTSIDE_ZONE);
+                } else if (idleWhenNotShooting) {
+                    setFlywheelSpeedPercent(ShooterConstants.SPEED_WHEN_OUTSIDE_ZONE * 0.6);
+                } else {
+                    setFlywheelSpeedPercent(0);
+                }
+            }
+        } else {
+            setFlywheelSpeedPercent(manualSpeed);
+        }
+    }
+
+    /**
+     * Set both motors to the same percent output.
+     */
+    public void setFlywheelSpeedPercent(double percent) {
+        //shooterMotor2.setControl(new VelocityVoltage(percent));
+        Logger.recordOutput("Shooter/FlywheelSpeed", percent);
+        flywheelMotor1.setControl(new VelocityVoltage(percent));
+        motorSpeed = percent;
+//        System.out.println("setting both percent to " + percent);
+    }
+
+    public void calculateAutomaticFlywheelSpeed() {
         Pose2d currentPose = robotState.getEstimatedPose();
         Translation2d target;
         double distance;
@@ -269,6 +272,7 @@ public class Shooter extends SubsystemBase {
 
 //        automaticSpeed = Math.atan2(target.getX(), target.getY()) - distance;
         automaticSpeed = MathUtil.clamp(distance * 20, 0, 100);
+
         Logger.recordOutput("Shooter/AutomaticSpeed", automaticSpeed);
     }
 
@@ -315,60 +319,34 @@ public class Shooter extends SubsystemBase {
         return (currentPose.getMeasureY().compareTo(FieldConstants.RED_GOAL_POSITION.getMeasureY()) > 0);
     }
 
+    public void manualShoot(double speed, double hoodAngle) {
+        isShooting = true;
+        autoSpeedMode = false;
+        autoHoodAngle = false;
+        updateHoodAngle();
+        setManualSpeed(speed);
+    }
+
     public void shoot () {
-        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
-            if (robotState.getEstimatedPose().getMeasureX().compareTo(FieldConstants.BLUE_GOAL_POSITION.getMeasureX()) < 0) {
-                zoneSpeed = automaticSpeed;
-                if (mode == Mode.SHOOTING) {
-                    setBothPercent(automaticSpeed);
-                }
-            } else {
-                zoneSpeed = 100;
-                if (mode == Mode.SHOOTING) {
-                    setBothPercent(100);
-                }
-            }
+        isShooting = true;
+        setTransferMotor(0.6);
+        updateFlywheelSpeed();
+        updateHoodAngle();
+    }
+
+    public void stopShooting() {
+        isShooting = false;
+        updateFlywheelSpeed();
+        updateHoodAngle();
+        setTransferMotor(0);
+    }
+
+    public boolean inOurZone(Pose2d currentPose) {
+        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue){
+            return inBlueAllianceZone(currentPose);
         } else {
-            if (robotState.getEstimatedPose().getMeasureX().compareTo(FieldConstants.RED_GOAL_POSITION.getMeasureX()) > 0) {
-                zoneSpeed = automaticSpeed;
-                if (mode == Mode.SHOOTING) {
-                    setBothPercent(automaticSpeed);
-                }
-            } else {
-                zoneSpeed = 100;
-                if (mode == Mode.SHOOTING) {
-                    setBothPercent(100);
-                }
-            }
+            return inRedAllianceZone(currentPose);
         }
-        if (mode == Mode.IDLING) {
-            setBothPercent(0.6 * zoneSpeed);
-        }
-    }
-
-    /**
-     * Example command factory method.
-     *
-     * @return The autonomous command
-     */
-    public Command exampleMethodCommand() {
-        // Inline construction of command goes here.
-        // Subsystem::RunOnce implicitly requires `this` subsystem.
-        return runOnce(
-                () -> {
-                    /* one-time action goes here */
-                });
-    }
-
-
-    /**
-     * An example method querying a boolean state of the subsystem (for example, a digital sensor).
-     *
-     * @return value of some boolean subsystem state, such as a digital sensor.
-     */
-    public boolean exampleCondition() {
-        // Query some boolean state, such as a digital sensor.
-        return false;
     }
 
 
@@ -376,33 +354,28 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
 
-        calculateAutomaticSpeed();
-
-        switch(mode) {
-            case STOPPED -> stop();
-            case IDLING, SHOOTING -> shoot();
-            case MANUAL ->   setBothPercent(manualSpeed * 100);
-        }
-        angler.setControl(new PositionDutyCycle(anglerMotorPosition - encoderOffset));
         Translation2d shootingPosition = calculateShootingPosition();
         Logger.recordOutput("Shooter/shootingPosition", shootingPosition);
 
-        if (MathUtil.isNear(automaticSpeed, shooterMotor1.getVelocity().getValueAsDouble(), ShooterConstants.SPEED_TOLERANCE) && (mode == Mode.SHOOTING)) {
+        if (isShooting && isSpunUp()) {
             setInjectorMotor(0.6);
         } else {
             setInjectorMotor(0);
         }
 
-        if (mode == Mode.SHOOTING) {
-            setTransferMotor(0.6);
-        } else {
-            setTransferMotor(0);
+        if (autoSpeedMode) {
+            updateFlywheelSpeed();
+        }
+        if (autoHoodAngle && isShooting) {
+            autoCalculateHoodAngle();
+            updateHoodAngle();
         }
 
-//        System.out.println("Target anglerPosition: " + (anglerPosition - encoderOffset) + " current anglerPosition: " +
-//                angler.getPosition() + " encoder offset: " + encoderOffset);
     }
 
+    public boolean isSpunUp() {
+        return (MathUtil.isNear(automaticSpeed, flywheelMotor1.getVelocity().getValueAsDouble(), ShooterConstants.SPEED_TOLERANCE));
+    }
 
     @Override
     public void simulationPeriodic() {

@@ -37,7 +37,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.LoggedTunableNumber;
@@ -161,13 +160,13 @@ public class RobotContainer {
 
         for (String autoName : (AutoBuilder.getAllAutoNames())) {
             PathPlannerAuto autoCommand = (PathPlannerAuto) AutoBuilder.buildAuto(autoName);
-            autoChooser.addOption(autoName, autoCommand);
+            if (! autoName.startsWith("test")) {
+                autoChooser.addOption(autoName, autoCommand);
+            }
         }
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
         autoChooser.addDefaultOption("None", new NoneAuto());
-
-        autoChooser.addOption("test", new NoneAuto());
 
         autoChooser.onChange(auto -> {
             try {
@@ -229,22 +228,27 @@ public class RobotContainer {
                         () -> -driverController.getRightX()));
 
 
+
+        manipulatorController.x().onTrue(Commands.runOnce(shooter::shoot, shooter).andThen(() -> intake.wiggle(), intake));
+        manipulatorController.x().onFalse(Commands.runOnce(shooter::stopShooting, shooter).andThen(() -> intake.stopWiggle(), intake));
+        manipulatorController.a().onTrue(Commands.runOnce(shooter::toggleIdling, shooter));
+
+        manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::toggleIntake, intake));
+        manipulatorController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
+        manipulatorController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
+
+        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::angleUp, shooter));
+        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::angleDown, shooter));
+        manipulatorController.start().onTrue(Commands.runOnce(shooter::toggleAutoEverything, shooter));
+
 //        manipulatorController.rightBumper().onTrue(Commands.runOnce((shooter::faster), shooter));
 //        manipulatorController.leftBumper().onTrue(Commands.runOnce((shooter::slower), shooter));
-        manipulatorController.a().onTrue(Commands.runOnce(shooter::setModeShooting, shooter));
-        manipulatorController.a().onFalse(Commands.runOnce(shooter::setModeIdling, shooter));
-        manipulatorController.b().onTrue(Commands.runOnce(shooter::toggleIdling, shooter).andThen(Commands.runOnce(transfer::run, transfer)));
-
-        manipulatorController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setAngle(0.5), shooter));
-        manipulatorController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setAngle(0), shooter));
-//
-//        manipulatorController.x().onTrue(Commands.runOnce(intake::extendIntake, intake));
-//        manipulatorController.x().onFalse(Commands.runOnce(intake::retractIntake, intake));
 //
 //        manipulatorController.y().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(50), shooter));
 //        manipulatorController.y().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0), shooter));
 
-        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.toggleAngles(0.2, 0.6), shooter));
+//        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.toggleAngles(0.2, 0.6), shooter));
+
 
 //        manipulatorController.a().onTrue(Commands.runOnce(() -> intake.runSpeed(-0.5), intake));
 //        manipulatorController.a().onFalse(Commands.runOnce(intake::stop, intake));
@@ -254,11 +258,7 @@ public class RobotContainer {
 //        manipulatorController.b().onTrue(Commands.runOnce(intake::extendIntake, intake));
 //        manipulatorController.b().onFalse(Commands.runOnce(intake::retractIntake, intake));
 
-        manipulatorController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
-        manipulatorController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
 
-        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::angleUp, shooter));
-        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 
 
         driverController.leftBumper().whileTrue(
@@ -423,8 +423,11 @@ public class RobotContainer {
 
     private void registerNamedCommands() {
         System.out.println("Registering Commands");
-        NamedCommands.registerCommand("runIntake", new InstantCommand(() -> intake.runSpeed(0.5)).andThen(() -> System.out.println("runIntake")));
-        NamedCommands.registerCommand("print", new PrintCommand("print"));
+        NamedCommands.registerCommand("runIntake", new InstantCommand(() -> intake.runSpeed(0.5)));
+        NamedCommands.registerCommand("extendIntake", new InstantCommand(() -> intake.extendIntake()));
+        NamedCommands.registerCommand("retractIntake", new InstantCommand(() -> intake.retractIntake()));
+        NamedCommands.registerCommand("shoot40Inches", new InstantCommand(() -> shooter.manualShoot(50,0.8)));
+        NamedCommands.registerCommand("shoot92.5Inches", new InstantCommand(() -> shooter.manualShoot(70, 0.8)));
 
     }
 
@@ -447,8 +450,8 @@ public class RobotContainer {
         currentPoseField.setRobotPose(robotState.getEstimatedPose());
         currentPoseField.getObject("VisionEstimate").setPose(vision.getLastVisionObservation().robotPose());
 //        System.out.println("Serial Number: " + System.getenv("serialnum"));
-        SmartDashboard.putNumber("Shooter Speed", (int) shooter.speed);
-        SmartDashboard.putNumber("Shooter Angle", (int) (shooter.anglerPosition * 100));
+        SmartDashboard.putNumber("Shooter Speed", (int) shooter.motorSpeed);
+        SmartDashboard.putNumber("Shooter Angle", (int) (shooter.hoodPosition * 100));
     }
 
     public void teleopPeriodic() {

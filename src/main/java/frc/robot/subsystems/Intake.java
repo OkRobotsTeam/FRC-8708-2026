@@ -5,12 +5,11 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.util.LoggedTuneablePID;
-import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 /**
@@ -23,25 +22,27 @@ public class Intake extends SubsystemBase {
 //    public final LoggedTuneablePID positionPID = new LoggedTuneablePID("/Intake/PositionPID", IntakeConstants.KP, IntakeConstants.KI, IntakeConstants.KD);
 
     private final TalonFX intakeMotor;
-    private final TalonFX intakeActuator;
+    private final TalonFX intakeExtender;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
     double intakeSpeed = 0.5;
     public int currentState = 0;
     private double targetPosition = 0;
+    private boolean wiggling = false;
 
     public Intake() {
-        intakeMotor = new TalonFX(IntakeConstants.PICKUP_MOTOR_ID);
-        intakeActuator = new TalonFX(IntakeConstants.PICKUP_ACTUATOR_ID);
+        intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR_ID);
+        intakeExtender = new TalonFX(IntakeConstants.INTAKE_EXTENDER_ID);
         var configs = new MotorOutputConfigs();
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
         intakeMotor.getConfigurator().apply(configs);
-        intakeActuator.getConfigurator().apply(configs);
+        intakeExtender.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
 
         intakeMotor.setPosition(0.0);
+        intakeExtender.setPosition(0.0);
 
 
         TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration(); // Start with factory defaults
@@ -66,28 +67,38 @@ public class Intake extends SubsystemBase {
         currentState = 0;
     }
 
-
-    public void setMotors(double power) {
-        intakeActuator.set(power);
+    public void toggleIntake() {
+        if (currentState == 0) {
+            extendIntake();
+        } else if (currentState == 1) {
+            retractIntake();
+        }
     }
 
+    public void wiggle() {
+        wiggling = true;
+    }
 
-    public void setMotorPercent(double percent) {
+    public void stopWiggle() {
+        wiggling = false;
+    }
+
+    public void setIntakeSpeed(double percent) {
         intakeMotor.setControl(m_dutyCycle.withOutput(percent));
     }
 
     public void stop() {
-        setMotorPercent(0.0);
+        setIntakeSpeed(0.0);
         System.out.println("Stopping Intake");
     }
 
     public void run() {
-        setMotorPercent(intakeSpeed);
+        setIntakeSpeed(intakeSpeed);
         System.out.println("Running Intake");
     }
 
     public void runSpeed(Double speed) {
-        setMotorPercent(speed);
+        setIntakeSpeed(speed);
         System.out.println("Running Intake" + speed);
     }
 
@@ -116,8 +127,16 @@ public class Intake extends SubsystemBase {
 //        double pidOutput = positionPID.calculate(intakeActuator.getPosition().getValueAsDouble());
 //        setMotors(pidOutput);
 
-        intakeActuator.setControl(new PositionDutyCycle(targetPosition));
         //System.out.println("Target position: " + targetPosition + " Current position: " + intakeActuator.getPosition());
+
+        if (wiggling) {
+            if (System.currentTimeMillis() % 500 > 250) {
+                intakeExtender.setControl(new PositionDutyCycle(0));
+            } else {
+                intakeExtender.setControl(new PositionDutyCycle(IntakeConstants.WIGGLE_ROTATIONS));
+            }
+        }
+        intakeExtender.setControl(new PositionDutyCycle(targetPosition));
 
     }
 

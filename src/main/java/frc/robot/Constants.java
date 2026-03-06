@@ -17,14 +17,12 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import com.pathplanner.lib.path.PathConstraints;
-import edu.wpi.first.math.util.Units;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.subsystems.Drive.DriveConstants;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -81,21 +79,21 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int MOTOR_2_ID = 5;
-        public static final int MOTOR_1_ID = 0;
-        public static final int ANGLER_ID = 0; //TODO UPDATE ID
-        public static final int INJECTOR_ID = 0; //TODO UPDATE ID
-        public static final int TRANSFER_ID = 0; //TODO UPDATE ID
-        public static final double ANGLER_STARTING_POSITION = 0.0; //TODO UPDATE
+        public static final int MOTOR_1_ID = 1;
+        public static final int MOTOR_2_ID = 2;
+        public static final int HOOD_ID = 3;
+        public static final int INJECTOR_ID = 4;
+        public static final int TRANSFER_ID = 5;
+        public static final double HOOD_STARTING_POSITION = 0.0; //TODO UPDATE
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
         public static final double FLYWHEEL_P = 0.1;
         public static final double FLYWHEEL_I = 0;
         public static final double FLYWHEEL_D = 0.01;
         public static final double FLYWHEEL_V = 0.125;
-        public static final double ANGLER_P = 0.2;
-        public static final double ANGLER_I = 0;
-        public static final double ANGLER_D = 0.01;
-        public static final double ANGLER_V = 0.125;
+        public static final double HOOD_P = 0.2;
+        public static final double HOOD_I = 0;
+        public static final double HOOD_D = 0.01;
+        public static final double HOOD_V = 0.125;
         public static final double TRANSFER_P = 0.1;
         public static final double TRANSFER_D = 0.01;
         public static final double TRANSFER_V = 0.125;
@@ -106,13 +104,13 @@ public final class Constants {
         public static final CounterBase.EncodingType ENCODER_ENCODING_TYPE = Encoder.EncodingType.k4X;
         public static final int MAXIMUM_ANGULAR_ROTATIONS = 10; //TODO UPDATE
         public static final double SPEED_TOLERANCE = 5; //TODO UPDATE
+        public static final double SPEED_WHEN_OUTSIDE_ZONE = 100;
     }
 
 
     public static final class IntakeConstants {
-//        public static final int PICKUP_MOTOR_ID = 5;
-        public static final int PICKUP_MOTOR_ID = 0;
-        public static final int PICKUP_ACTUATOR_ID = 0;
+        public static final int INTAKE_MOTOR_ID = 6;
+        public static final int INTAKE_EXTENDER_ID = 7;
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
         public static final double KP = 0.2;
         public static final double KI = 0;
@@ -121,6 +119,7 @@ public final class Constants {
         public static final int EXTENDED_POSITION = 5; //TODO GET POSITION
         public static final int RETRACTED_POSITION = 0; //TODO GET POSITION
         public static final double INTAKE_ROTATION_GEAR_RATIO = 19.42;
+        public static final double WIGGLE_ROTATIONS = 1;
     }
 
     public static final class PathConstants {
