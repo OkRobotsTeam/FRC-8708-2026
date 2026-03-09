@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -13,12 +14,18 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+
+import javax.swing.text.html.Option;
+
+import java.util.Optional;
 
 import static edu.wpi.first.units.Units.Meters;
 
@@ -45,11 +52,10 @@ public class Shooter extends SubsystemBase {
 
     boolean isShooting = false;
     public boolean idleWhenNotShooting;
-    public boolean autoSpeedMode;
+    public boolean autoSpeedMode = false;
     public boolean autoHoodAngle;
-
     public double motorSpeed = 0;
-    public double manualSpeed = 0;
+    public double manualSpeed = 35;
     private double automaticSpeed = 0.0;
 
     private final RobotState robotState = RobotState.getInstance();
@@ -69,10 +75,17 @@ public class Shooter extends SubsystemBase {
         injector = new TalonFX(ShooterConstants.INJECTOR_ID);
         transfer = new TalonFX(ShooterConstants.TRANSFER_ID);
         var configs = new MotorOutputConfigs();
+
         configs.Inverted = InvertedValue.Clockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
-        flywheelMotor1.getConfigurator().apply(configs);
+        // APPLY CURRENT LIMITS
+        flywheelMotor1.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        flywheelMotor2.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        hood.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        injector.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        transfer.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS.withSupplyCurrentLimit(61).withStatorCurrentLimit(100));
+
         hood.getConfigurator().apply(configs);
         injector.getConfigurator().apply(configs);
         transfer.getConfigurator().apply(configs);
@@ -85,7 +98,8 @@ public class Shooter extends SubsystemBase {
         flywheelMotor2.setPosition(0.0);
         hood.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
 
-        encoderOffset = encoder.getDistance();
+//        encoderOffset = encoder.getDistance();
+        encoderOffset = 0;
 
         TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration(); // Start with factory defaults
         Slot0Configs slot0Configs = new Slot0Configs();
@@ -108,7 +122,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setShooterModeStopped() {
-        idleWhenNotShooting = false;
+        isShooting = false;
         System.out.println("setShooterModeStopped");
     }
 
@@ -166,7 +180,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setManualSpeed(double input) {
-        manualSpeed = MathUtil.clamp(input, 0, 1);
+        manualSpeed = MathUtil.clamp(input, 0, 100);
         updateFlywheelSpeed();
     }
 
@@ -176,11 +190,14 @@ public class Shooter extends SubsystemBase {
     }
 
     public void faster() {
-        setManualSpeed(manualSpeed + 0.05);
+        setManualSpeed(manualSpeed + 5);
+        updateFlywheelSpeed();
+        System.out.println("Faster");
     }
 
     public void slower() {
-        setManualSpeed(manualSpeed - 0.05);
+        setManualSpeed(manualSpeed - 5);
+        updateFlywheelSpeed();
     }
 
     public void angleUp() {
@@ -244,7 +261,11 @@ public class Shooter extends SubsystemBase {
                 }
             }
         } else {
-            setFlywheelSpeedPercent(manualSpeed);
+            if (isShooting) {
+                setFlywheelSpeedPercent(manualSpeed);
+            } else {
+                setFlywheelSpeedPercent(0);
+            }
         }
     }
 
@@ -279,28 +300,27 @@ public class Shooter extends SubsystemBase {
     @AutoLogOutput(key = "Shooter/CalculatedShootingPosition")
     public Translation2d calculateShootingPosition () {
         Pose2d currentPose = robotState.getEstimatedPose();
-        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
-            if (! inBlueAllianceZone(currentPose)) {
-                if (inBlueLeftHalf(currentPose)) {
-                    return FieldConstants.BLUE_LEFT_AIM_POSITION;
+        if (DriverStation.getAlliance().equals(Optional.of(DriverStation.Alliance.Blue))) {
+                if (! inBlueAllianceZone(currentPose)) {
+                    if (inBlueLeftHalf(currentPose)) {
+                        return FieldConstants.BLUE_LEFT_AIM_POSITION;
+                    } else {
+                        return FieldConstants.BLUE_RIGHT_AIM_POSITION;
+                    }
                 } else {
-                    return FieldConstants.BLUE_RIGHT_AIM_POSITION;
+                    return  FieldConstants.BLUE_GOAL_POSITION;
                 }
             } else {
-                return  FieldConstants.BLUE_GOAL_POSITION;
-            }
-        } else if (DriverStation.getAlliance().get() == DriverStation.Alliance.Red) {
-            if (! inRedAllianceZone(currentPose)) {
-                if (inRedLeftHalf(currentPose)) {
-                    return FieldConstants.RED_LEFT_AIM_POSITION;
+                if (!inRedAllianceZone(currentPose)) {
+                    if (inRedLeftHalf(currentPose)) {
+                        return FieldConstants.RED_LEFT_AIM_POSITION;
+                    } else {
+                        return FieldConstants.RED_RIGHT_AIM_POSITION;
+                    }
                 } else {
-                    return FieldConstants.RED_RIGHT_AIM_POSITION;
+                    return FieldConstants.RED_GOAL_POSITION;
                 }
-            } else {
-                return FieldConstants.RED_GOAL_POSITION;
             }
-        }
-        return new Translation2d(Meters.of(100), Meters.of(100));
     }
 
     public boolean inRedAllianceZone(Pose2d currentPose) {
@@ -356,20 +376,25 @@ public class Shooter extends SubsystemBase {
 
         Translation2d shootingPosition = calculateShootingPosition();
         Logger.recordOutput("Shooter/shootingPosition", shootingPosition);
+//
+//        if (isShooting && isSpunUp()) {
+//            setInjectorMotor(0.6);
+//        } else {
+//            setInjectorMotor(0);
+//        }
+//
+//        if (autoSpeedMode) {
+//            updateFlywheelSpeed();
+//        }
 
-        if (isShooting && isSpunUp()) {
-            setInjectorMotor(0.6);
-        } else {
-            setInjectorMotor(0);
-        }
 
-        if (autoSpeedMode) {
-            updateFlywheelSpeed();
-        }
-        if (autoHoodAngle && isShooting) {
-            autoCalculateHoodAngle();
-            updateHoodAngle();
-        }
+        updateFlywheelSpeed();
+
+
+//        if (autoHoodAngle && isShooting) {
+//            autoCalculateHoodAngle();
+//            updateHoodAngle();
+//        }
 
     }
 
@@ -380,5 +405,31 @@ public class Shooter extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         // This method will be called once per scheduler run during simulation
+    }
+
+    /**
+     * Example command factory method.
+     *
+     * @return The autonomous command
+     */
+    public Command exampleMethodCommand() {
+        // Inline construction of command goes here.
+        // Subsystem::RunOnce implicitly requires `this` subsystem.
+        return runOnce(
+                () -> {
+                    /* one-time action goes here */
+                });
+    }
+
+
+
+    /**
+     * An example method querying a boolean state of the subsystem (for example, a digital sensor).
+     *
+     * @return value of some boolean subsystem state, such as a digital sensor.
+     */
+    public boolean exampleCondition() {
+        // Query some boolean state, such as a digital sensor.
+        return false;
     }
 }

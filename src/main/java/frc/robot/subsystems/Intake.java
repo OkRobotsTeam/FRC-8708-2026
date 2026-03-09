@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 /**
@@ -24,7 +25,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakeMotor;
     private final TalonFX intakeExtender;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
-    double intakeSpeed = 0.5;
+    double intakeSpeed = 1;
     public int currentState = 0;
     private double targetPosition = 0;
     private boolean wiggling = false;
@@ -36,10 +37,13 @@ public class Intake extends SubsystemBase {
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
-        intakeMotor.getConfigurator().apply(configs);
-        intakeExtender.getConfigurator().apply(configs);
+        // APPLY CURRENT LIMITS
+        intakeMotor.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        intakeExtender.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
 
-        configs.Inverted = InvertedValue.CounterClockwise_Positive;
+        configs.Inverted = InvertedValue.Clockwise_Positive;
+        intakeExtender.getConfigurator().apply(configs);
+        intakeMotor.getConfigurator().apply(configs);
 
         intakeMotor.setPosition(0.0);
         intakeExtender.setPosition(0.0);
@@ -70,8 +74,10 @@ public class Intake extends SubsystemBase {
     public void toggleIntake() {
         if (currentState == 0) {
             extendIntake();
+            runSpeed(intakeSpeed);
         } else if (currentState == 1) {
             retractIntake();
+            runSpeed(0.0);
         }
     }
 

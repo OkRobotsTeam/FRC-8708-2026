@@ -127,6 +127,8 @@ public class ModuleIOTalonFX implements ModuleIO {
         turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         turnConfig.Slot0 = constants.SteerMotorGains;
         turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
+        turnConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         turnConfig.Feedback.FeedbackSensorSource = switch (constants.FeedbackSource) {
             case RemoteCANcoder -> FeedbackSensorSourceValue.RemoteCANcoder;
             case FusedCANcoder -> FeedbackSensorSourceValue.FusedCANcoder;

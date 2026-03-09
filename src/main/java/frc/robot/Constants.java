@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.CounterBase;
@@ -33,6 +34,11 @@ public final class Constants {
     public static final Mode simMode = Mode.SIM;
     public static Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
+    public static final CurrentLimitsConfigs DEFAULT_CURRENT_LIMITS =
+            new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(40)
+                    .withSupplyCurrentLimit(40)
+                    .withStatorCurrentLimitEnable(true);
     public static final boolean tuningMode = true;
 
     public static enum Mode {
@@ -86,10 +92,10 @@ public final class Constants {
         public static final int TRANSFER_ID = 5;
         public static final double HOOD_STARTING_POSITION = 0.0; //TODO UPDATE
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
-        public static final double FLYWHEEL_P = 0.1;
+        public static final double FLYWHEEL_P = 0.2;
         public static final double FLYWHEEL_I = 0;
         public static final double FLYWHEEL_D = 0.01;
-        public static final double FLYWHEEL_V = 0.125;
+        public static final double FLYWHEEL_V = 0.15;
         public static final double HOOD_P = 0.2;
         public static final double HOOD_I = 0;
         public static final double HOOD_D = 0.01;
@@ -112,7 +118,7 @@ public final class Constants {
         public static final int INTAKE_MOTOR_ID = 6;
         public static final int INTAKE_EXTENDER_ID = 7;
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
-        public static final double KP = 0.2;
+        public static final double KP = 0.1;
         public static final double KI = 0;
         public static final double KD = 0;
         public static final double KV = 0.125;

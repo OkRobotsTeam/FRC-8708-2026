@@ -6,6 +6,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 /**
  * Subsystem to control two TalonFX motors independently (or optionally make the
@@ -29,6 +30,10 @@ public class Transfer extends SubsystemBase {
         var configs = new MotorOutputConfigs();
         configs.Inverted = InvertedValue.Clockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
+
+        // APPLY CURRENT LIMITS
+        top.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        bottom.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
 
         top.getConfigurator().apply(configs);
 

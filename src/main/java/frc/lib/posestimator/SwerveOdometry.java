@@ -149,6 +149,10 @@ public class SwerveOdometry {
      */
     public void resetPose(Pose2d pose)
     {
+        if (pose == null) {
+            return;
+        }
+
         gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
         odometryPose = pose;
         odometryBuffer.clear();
