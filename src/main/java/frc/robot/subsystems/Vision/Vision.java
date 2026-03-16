@@ -2,6 +2,8 @@ package frc.robot.subsystems.Vision;
 
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.util.LimelightHelpers;
@@ -33,22 +35,47 @@ public class Vision extends SubsystemBase {
 //        boolean hasTarget = LimelightHelpers.getTV(""); // Do you have a valid target?
         
         // First, tell Limelight your robot's current orientation
-        LimelightHelpers.SetRobotOrientation(
-                "",
-                180+this.robotState.getEstimatedPose().getRotation().getDegrees(),
-                this.robotState.getVelocity().omegaRadiansPerSecond
-        );
+//        LimelightHelpers.SetRobotOrientation(
+//                "",
+//                180+this.robotState.getEstimatedPose().getRotation().getDegrees(),
+//                this.robotState.getVelocity().omegaRadiansPerSecond
+//        );
+
+
 
         // Get the pose estimate
-        LimelightHelpers.PoseEstimate limelightMeasurementMT2 = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("");
+        if (DriverStation.getAlliance().isEmpty()) {
+            return;
+        }
 
-        if (limelightMeasurementMT2.pose.equals(Pose2d.kZero)) {
+        LimelightHelpers.PoseEstimate limelightMeasurementMT2;
+
+        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue ) {
+            LimelightHelpers.SetRobotOrientation(
+                    "",
+                    this.robotState.getEstimatedPose().getRotation().getDegrees(),
+                    this.robotState.getVelocity().omegaRadiansPerSecond
+            );
+            limelightMeasurementMT2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+        } else {
+            LimelightHelpers.SetRobotOrientation(
+                    "",
+                    180 + this.robotState.getEstimatedPose().getRotation().getDegrees(),
+                    this.robotState.getVelocity().omegaRadiansPerSecond
+            );
+            limelightMeasurementMT2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+        }
+
+        LimelightHelpers.PoseEstimate limelightMeasurementMT1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+
+
+        if (limelightMeasurementMT1.pose.equals(Pose2d.kZero)) {
             return;
         }
 
         this.lastVisionObservation = new PoseEstimator.VisionPoseObservation(
-                limelightMeasurementMT2.timestampSeconds,
-                limelightMeasurementMT2.pose,
+                limelightMeasurementMT1.timestampSeconds,
+                limelightMeasurementMT1.pose,
                 VisionConstants.VISION_LINEAR_STANDARD_DEVIATION_METERS,
                 VisionConstants.VISION_ANGULAR_STANDARD_DEVIATION_RAD);
 

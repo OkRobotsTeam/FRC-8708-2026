@@ -80,11 +80,11 @@ public class Shooter extends SubsystemBase {
         configs.NeutralMode = NeutralModeValue.Brake;
 
         // APPLY CURRENT LIMITS
-        flywheelMotor1.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
-        flywheelMotor2.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
-        hood.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
-        injector.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
-        transfer.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS.withSupplyCurrentLimit(61).withStatorCurrentLimit(100));
+        flywheelMotor1.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
+        flywheelMotor2.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
+        hood.getConfigurator().apply(Constants.HOOD_CURRENT_LIMITS);
+        injector.getConfigurator().apply(Constants.INJECTOR_CURRENT_LIMITS);
+        transfer.getConfigurator().apply(Constants.TRANSFER_CURRENT_LIMITS);
 
         hood.getConfigurator().apply(configs);
         injector.getConfigurator().apply(configs);

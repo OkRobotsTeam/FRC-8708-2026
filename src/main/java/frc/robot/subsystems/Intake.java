@@ -38,8 +38,8 @@ public class Intake extends SubsystemBase {
         configs.NeutralMode = NeutralModeValue.Brake;
 
         // APPLY CURRENT LIMITS
-        intakeMotor.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
-        intakeExtender.getConfigurator().apply(Constants.DEFAULT_CURRENT_LIMITS);
+        intakeMotor.getConfigurator().apply(Constants.INTAKE_WHEEL_CURRENT_LIMITS);
+        intakeExtender.getConfigurator().apply(Constants.INTAKE_EXTENDER_CURRENT_LIMITS);
 
         configs.Inverted = InvertedValue.Clockwise_Positive;
         intakeExtender.getConfigurator().apply(configs);

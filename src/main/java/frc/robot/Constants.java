@@ -34,11 +34,42 @@ public final class Constants {
     public static final Mode simMode = Mode.SIM;
     public static Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-    public static final CurrentLimitsConfigs DEFAULT_CURRENT_LIMITS =
+
+    public static final CurrentLimitsConfigs FLYWHEEL_CURRENT_LIMITS =
             new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(40)
-                    .withSupplyCurrentLimit(40)
-                    .withStatorCurrentLimitEnable(true);
+                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimitEnable(true);
+
+    public static final CurrentLimitsConfigs INTAKE_WHEEL_CURRENT_LIMITS =
+            new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimitEnable(true);
+
+
+    public static final CurrentLimitsConfigs INTAKE_EXTENDER_CURRENT_LIMITS =
+            new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimitEnable(true);
+
+
+    public static final CurrentLimitsConfigs INJECTOR_CURRENT_LIMITS =
+            new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimitEnable(true);
+
+
+    public static final CurrentLimitsConfigs TRANSFER_CURRENT_LIMITS =
+            new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(60) //TODO Update once changed
+                    .withSupplyCurrentLimitEnable(true);
+
+
+    public static final CurrentLimitsConfigs HOOD_CURRENT_LIMITS =
+            new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimitEnable(true);
+
+
     public static final boolean tuningMode = true;
 
     public static enum Mode {

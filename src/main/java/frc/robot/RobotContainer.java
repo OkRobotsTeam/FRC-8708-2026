@@ -60,7 +60,6 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Transfer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -323,6 +322,14 @@ public class RobotContainer {
                         () -> -driverController.getLeftY()
                 )
         );
+
+        Pose2d[] targetPoses = new Pose2d[]{new Pose2d(13.875, 4.145, Rotation2d.fromDegrees(0))};
+
+         driverController.x().whileTrue(
+                 new DriveToPose(
+                         drive,
+                         () -> targetPoses[0])
+         .withTolerance(Inches.of(3), Degrees.of(0.5)));
 
 //        controller.b().whileTrue(
 //                Commands.runOnce(drive::test)
