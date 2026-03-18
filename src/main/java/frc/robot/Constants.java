@@ -19,11 +19,15 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
+
+import java.util.List;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -169,6 +173,12 @@ public final class Constants {
         public static final Angle PATHGENERATION_ROT_TOLERANCE = Degrees.of(5.0);
         // Tune the maxAcceleration, maxAngularVelocityRadPerSec, and
         // maxAngularAccelerationRacPerSecSq constraints for pathfinding
+
+        // Pathing constants for teleop
+        public static final List<Pose2d> AUTO_ALIGN_TARGET_POSES = List.of(
+                new Pose2d(13.875, 4.145, Rotation2d.fromDegrees(0))
+                // TODO: Add more target poses here
+        );
 
     }
 }

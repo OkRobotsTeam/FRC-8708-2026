@@ -323,12 +323,13 @@ public class RobotContainer {
                 )
         );
 
-        Pose2d[] targetPoses = new Pose2d[]{new Pose2d(13.875, 4.145, Rotation2d.fromDegrees(0))};
-
-         driverController.x().whileTrue(
+        // While X is held, take over control from the driver and
+        // navigate to the closest pose to the robots current pose
+        // from a predefined list of AUTO_ALIGN_TARGET_POSES
+        driverController.x().whileTrue(
                  new DriveToPose(
                          drive,
-                         () -> targetPoses[0])
+                         () -> robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))
          .withTolerance(Inches.of(3), Degrees.of(0.5)));
 
 //        controller.b().whileTrue(
