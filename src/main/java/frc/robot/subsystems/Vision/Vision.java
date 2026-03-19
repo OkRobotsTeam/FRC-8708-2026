@@ -9,8 +9,13 @@ import frc.lib.posestimator.PoseEstimator;
 import frc.lib.util.LimelightHelpers;
 import frc.robot.RobotState;
 import lombok.Getter;
+import org.littletonrobotics.junction.Logger;
+
+import static frc.robot.FieldConstants.APRILTAG_LAYOUT;
+import static frc.robot.subsystems.Vision.VisionConstants.*;
 
 public class Vision extends SubsystemBase {
+
 
     private final RobotState robotState;
 
@@ -79,8 +84,32 @@ public class Vision extends SubsystemBase {
                 VisionConstants.VISION_LINEAR_STANDARD_DEVIATION_METERS,
                 VisionConstants.VISION_ANGULAR_STANDARD_DEVIATION_RAD);
 
-        // Add it to your pose estimator
-        this.robotState.addVisionObservation(this.lastVisionObservation);
 
-    }
+            var observation = limelightMeasurementMT1;
+
+            boolean rejectPose = false;
+            String rejectionReason = "";
+            if (observation.pose.getX() < 0.0 || observation.pose.getX() > APRILTAG_LAYOUT.getFieldLength()) {
+                rejectPose = true;
+                rejectionReason = "X position outside field boundaries (0 to " + APRILTAG_LAYOUT.getFieldLength() + ").";
+            } else if (observation.pose.getY() < 0.0 || observation.pose.getY() > APRILTAG_LAYOUT.getFieldWidth()) {
+                rejectPose = true;
+                rejectionReason = "Y position outside field boundaries (0 to " + APRILTAG_LAYOUT.getFieldWidth() + ").";
+            } else if (observation.avgTagDist > 2.5) {
+                rejectPose = true;
+                rejectionReason = "Average distance to tag too high " + observation.avgTagDist;
+            }
+
+            // Add pose to log
+            if (rejectPose) {
+                Logger.recordOutput("Vision/RejectionReason", rejectionReason);
+                Logger.recordOutput("Vision/RejectedPoses", observation.pose);
+            } else {
+                Logger.recordOutput("Vision/AcceptedPoses", observation.pose);
+                this.robotState.addVisionObservation(this.lastVisionObservation);
+
+            }
+
+
+        }
 }

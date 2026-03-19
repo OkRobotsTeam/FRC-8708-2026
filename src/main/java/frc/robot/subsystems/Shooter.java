@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -39,16 +40,15 @@ public class Shooter extends SubsystemBase {
     Encoder encoder = new Encoder(ShooterConstants.ENCODER_CHANNEL_A, ShooterConstants.ENCODER_CHANNEL_B, ShooterConstants.ENCODER_REVERSED, ShooterConstants.ENCODER_ENCODING_TYPE);
 
     private final TalonFX flywheelMotor1;
-    private final TalonFX flywheelMotor2;
-    private final TalonFX hood;
+    //private final TalonFX flywheelMotor2;
     private final TalonFX injector;
     private final TalonFX transfer;
+    private final Servo hoodServo1 = new Servo(ShooterConstants.SERVO_1);
+    private final Servo hoodServo2 = new Servo(ShooterConstants.SERVO_2);
 
     private final VelocityDutyCycle velocityDutyCycle = new VelocityDutyCycle(0);
     private final DutyCycleOut dutyCycleOut = new DutyCycleOut(0);
     boolean isRunning = false;
-
-
 
     boolean isShooting = false;
     public boolean idleWhenNotShooting;
@@ -70,10 +70,10 @@ public class Shooter extends SubsystemBase {
 
     public Shooter() {
         flywheelMotor1 = new TalonFX(ShooterConstants.MOTOR_1_ID);
-        flywheelMotor2 = new TalonFX(ShooterConstants.MOTOR_2_ID);
-        hood = new TalonFX(ShooterConstants.HOOD_ID);
+        //flywheelMotor2 = new TalonFX(ShooterConstants.MOTOR_2_ID);
         injector = new TalonFX(ShooterConstants.INJECTOR_ID);
         transfer = new TalonFX(ShooterConstants.TRANSFER_ID);
+
         var configs = new MotorOutputConfigs();
 
         configs.Inverted = InvertedValue.Clockwise_Positive;
@@ -81,22 +81,21 @@ public class Shooter extends SubsystemBase {
 
         // APPLY CURRENT LIMITS
         flywheelMotor1.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
-        flywheelMotor2.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
-        hood.getConfigurator().apply(Constants.HOOD_CURRENT_LIMITS);
+        //flywheelMotor2.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
         injector.getConfigurator().apply(Constants.INJECTOR_CURRENT_LIMITS);
         transfer.getConfigurator().apply(Constants.TRANSFER_CURRENT_LIMITS);
 
-        hood.getConfigurator().apply(configs);
         injector.getConfigurator().apply(configs);
         transfer.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
-        flywheelMotor2.getConfigurator().apply(configs);
-        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
+//        flywheelMotor2.getConfigurator().apply(configs);
+//        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
 
         flywheelMotor1.setPosition(0.0);
-        flywheelMotor2.setPosition(0.0);
-        hood.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
+//        flywheelMotor2.setPosition(0.0);
+        hoodServo1.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
+        hoodServo2.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
 
 //        encoderOffset = encoder.getDistance();
         encoderOffset = 0;
@@ -108,13 +107,12 @@ public class Shooter extends SubsystemBase {
         slot0Configs.kD = ShooterConstants.FLYWHEEL_D;
 
         flywheelMotor1.getConfigurator().apply(slot0Configs);
-        flywheelMotor2.getConfigurator().apply(slot0Configs);
+//        flywheelMotor2.getConfigurator().apply(slot0Configs);
 
         slot0Configs.kP = ShooterConstants.HOOD_P;
         slot0Configs.kV = ShooterConstants.HOOD_V;
         slot0Configs.kD = ShooterConstants.HOOD_D;
 
-        hood.getConfigurator().apply(slot0Configs);
 
 //        slot0Configs.kP = ShooterConstants.TRANSFER_P;
 //        slot0Configs.kV = ShooterConstants.TRANSFER_V;
@@ -186,6 +184,7 @@ public class Shooter extends SubsystemBase {
 
     public void setManualAngle(double input) {
         manualHoodPosition = MathUtil.clamp(input, 0, 1);
+        System.out.println("Changing manual hood angle to " + manualHoodPosition);
         updateHoodAngle();
     }
 
@@ -209,21 +208,24 @@ public class Shooter extends SubsystemBase {
     }
 
     public void updateHoodAngle() {
-        if (isShooting) {
-            if (autoHoodAngle) {
-                autoCalculateHoodAngle();
-                hoodPosition = automaticHoodPosition;
-            } else {
-                hoodPosition = manualHoodPosition;
-            }
-        } else {
-            hoodPosition = 0;
-        }
+//        if (isShooting) {
+//            if (autoHoodAngle) {
+//                autoCalculateHoodAngle();
+//                hoodPosition = automaticHoodPosition;
+//            } else {
+//                hoodPosition = manualHoodPosition;
+//            }
+//        } else {
+//            hoodPosition = 0;
+//        }
+        hoodPosition = manualHoodPosition;
+
         hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
         hoodMotorPosition = hoodPosition * ShooterConstants.MAXIMUM_ANGULAR_ROTATIONS;
-        hood.setControl(new PositionDutyCycle(hoodMotorPosition - encoderOffset));
+        hoodServo1.setPosition(hoodMotorPosition);
+        hoodServo2.setPosition(hoodMotorPosition);
         Logger.recordOutput("Shooter/Angler", hoodMotorPosition);
-
+        System.out.println("Shooter/Angler" + hoodMotorPosition);
     }
 
     public void autoCalculateHoodAngle() {

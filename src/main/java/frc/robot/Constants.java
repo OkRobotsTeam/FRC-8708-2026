@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.lib.io.servo.ServoIO;
 
 import java.util.List;
 
@@ -125,6 +126,8 @@ public final class Constants {
         public static final int HOOD_ID = 3;
         public static final int INJECTOR_ID = 4;
         public static final int TRANSFER_ID = 5;
+        public static final int SERVO_1 = 0;
+        public static final int SERVO_2 = 1;
         public static final double HOOD_STARTING_POSITION = 0.0; //TODO UPDATE
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
         public static final double FLYWHEEL_P = 0.2;
@@ -176,7 +179,8 @@ public final class Constants {
 
         // Pathing constants for teleop
         public static final List<Pose2d> AUTO_ALIGN_TARGET_POSES = List.of(
-                new Pose2d(13.875, 4.145, Rotation2d.fromDegrees(0))
+                new Pose2d(13.875, 4.145, Rotation2d.fromDegrees(0)),
+                new Pose2d(14.5, 7, Rotation2d.fromDegrees(45))
                 // TODO: Add more target poses here
         );
 

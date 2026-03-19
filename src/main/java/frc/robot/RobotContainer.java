@@ -235,8 +235,8 @@ public class RobotContainer {
 //        manipulatorController.povDown().onTrue(Commands.runOnce(()-> shooter.setManualAngle(1), shooter));
 
 
-//        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::angleUp, shooter));
-//        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::angleDown, shooter));
+        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::angleUp, shooter));
+        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 //        manipulatorController.start().onTrue(Commands.runOnce(shooter::toggleAutoEverything, shooter));
 
 
@@ -253,7 +253,7 @@ public class RobotContainer {
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
         manipulatorController.start().onTrue(Commands.runOnce(shooter::setShooterModeManual, shooter));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.3), shooter).andThen(() -> shooter.setTransferMotor(1), shooter));
+        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(1), shooter));
         manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter).andThen(() -> shooter.setTransferMotor(0.0), shooter));
 
 
