@@ -330,7 +330,7 @@ public class RobotContainer {
                  new DriveToPose(
                          drive,
                          () -> robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))
-         .withTolerance(Inches.of(3), Degrees.of(0.5)));
+         .withTolerance(Inches.of(3), Degrees.of(0.5)).andThen(() -> Logger.recordOutput("/test", robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))));
 
 //        controller.b().whileTrue(
 //                Commands.runOnce(drive::test)

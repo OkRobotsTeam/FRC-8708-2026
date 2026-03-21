@@ -1,6 +1,8 @@
 package frc.robot.subsystems.Drive;
 
+import static frc.robot.Constants.*;
 import static frc.robot.Constants.Mode.ALPHA;
+import static frc.robot.Constants.Mode.SIM;
 
 import frc.robot.Constants;
 
@@ -24,10 +26,12 @@ public class DriveConstants {
     public static SwerveDrivetrainConstants drivetrainConstants;
 
     public static void init() {
-        if (System.getenv("serialnum").equals(Constants.RobotConstants.alphaSerial)) {
-            Constants.currentMode = ALPHA;
+        if (System.getenv("serialnum").equals(RobotConstants.alphaSerial)) {
+            currentMode = ALPHA;
+
+            //currentMode = SIM;
         }
-        switch (Constants.currentMode) {
+        switch (currentMode) {
             case ALPHA:
                 kCANBus = DriveConstantsAlpha.kCANBus;
                 kPigeonId = DriveConstantsAlpha.kPigeonId;
@@ -49,7 +53,7 @@ public class DriveConstants {
         }
     }
     public static Drive get() {
-        switch (Constants.currentMode) {
+        switch (currentMode) {
             case ALPHA:
                 System.out.println("ALPHA drive");
                 return new Drive(

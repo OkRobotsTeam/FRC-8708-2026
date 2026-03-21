@@ -40,7 +40,7 @@ public class Shooter extends SubsystemBase {
     Encoder encoder = new Encoder(ShooterConstants.ENCODER_CHANNEL_A, ShooterConstants.ENCODER_CHANNEL_B, ShooterConstants.ENCODER_REVERSED, ShooterConstants.ENCODER_ENCODING_TYPE);
 
     private final TalonFX flywheelMotor1;
-    //private final TalonFX flywheelMotor2;
+    private final TalonFX flywheelMotor2;
     private final TalonFX injector;
     private final TalonFX transfer;
     private final Servo hoodServo1 = new Servo(ShooterConstants.SERVO_1);
@@ -70,7 +70,7 @@ public class Shooter extends SubsystemBase {
 
     public Shooter() {
         flywheelMotor1 = new TalonFX(ShooterConstants.MOTOR_1_ID);
-        //flywheelMotor2 = new TalonFX(ShooterConstants.MOTOR_2_ID);
+        flywheelMotor2 = new TalonFX(ShooterConstants.MOTOR_2_ID);
         injector = new TalonFX(ShooterConstants.INJECTOR_ID);
         transfer = new TalonFX(ShooterConstants.TRANSFER_ID);
 
@@ -81,7 +81,7 @@ public class Shooter extends SubsystemBase {
 
         // APPLY CURRENT LIMITS
         flywheelMotor1.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
-        //flywheelMotor2.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
+        flywheelMotor2.getConfigurator().apply(Constants.FLYWHEEL_CURRENT_LIMITS);
         injector.getConfigurator().apply(Constants.INJECTOR_CURRENT_LIMITS);
         transfer.getConfigurator().apply(Constants.TRANSFER_CURRENT_LIMITS);
 
@@ -89,11 +89,11 @@ public class Shooter extends SubsystemBase {
         transfer.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
-//        flywheelMotor2.getConfigurator().apply(configs);
-//        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
+        flywheelMotor2.getConfigurator().apply(configs);
+        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
 
         flywheelMotor1.setPosition(0.0);
-//        flywheelMotor2.setPosition(0.0);
+        flywheelMotor2.setPosition(0.0);
         hoodServo1.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
         hoodServo2.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
 
@@ -107,7 +107,7 @@ public class Shooter extends SubsystemBase {
         slot0Configs.kD = ShooterConstants.FLYWHEEL_D;
 
         flywheelMotor1.getConfigurator().apply(slot0Configs);
-//        flywheelMotor2.getConfigurator().apply(slot0Configs);
+        flywheelMotor2.getConfigurator().apply(slot0Configs);
 
         slot0Configs.kP = ShooterConstants.HOOD_P;
         slot0Configs.kV = ShooterConstants.HOOD_V;
@@ -200,7 +200,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void angleUp() {
-        setManualAngle(manualHoodPosition + .1);
+        setManualAngle(manualHoodPosition + 0.1);
     }
 
     public void angleDown() {
@@ -221,11 +221,11 @@ public class Shooter extends SubsystemBase {
         hoodPosition = manualHoodPosition;
 
         hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
-        hoodMotorPosition = hoodPosition * ShooterConstants.MAXIMUM_ANGULAR_ROTATIONS;
-        hoodServo1.setPosition(hoodMotorPosition);
-        hoodServo2.setPosition(hoodMotorPosition);
-        Logger.recordOutput("Shooter/Angler", hoodMotorPosition);
-        System.out.println("Shooter/Angler" + hoodMotorPosition);
+        //hoodMotorPosition = hoodPosition * ShooterConstants.MAXIMUM_ANGULAR_ROTATIONS;
+        hoodServo1.setPosition(hoodPosition);
+        hoodServo2.setPosition(hoodPosition);
+        Logger.recordOutput("Shooter/Angler", hoodPosition);
+        System.out.println("Shooter/Angler" + hoodPosition);
     }
 
     public void autoCalculateHoodAngle() {
@@ -275,7 +275,7 @@ public class Shooter extends SubsystemBase {
      * Set both motors to the same percent output.
      */
     public void setFlywheelSpeedPercent(double percent) {
-        //shooterMotor2.setControl(new VelocityVoltage(percent));
+        flywheelMotor2.setControl(new VelocityVoltage(percent));
         Logger.recordOutput("Shooter/FlywheelSpeed", percent);
         flywheelMotor1.setControl(new VelocityVoltage(percent));
         motorSpeed = percent;

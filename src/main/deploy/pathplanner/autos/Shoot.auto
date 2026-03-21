@@ -7,19 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot40"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "LeftCenterStart Backup"
+            "name": "shoot92.5Inches"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 3.0
           }
         },
         {
@@ -31,19 +25,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 8.0
+            "waitTime": 10.0
           }
         },
         {
           "type": "named",
           "data": {
             "name": "stopInjectorAndTransfer"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
           }
         },
         {

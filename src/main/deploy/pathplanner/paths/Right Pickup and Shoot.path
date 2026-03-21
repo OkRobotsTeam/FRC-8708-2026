@@ -48,32 +48,32 @@
     },
     {
       "anchor": {
-        "x": 4.510867469879518,
-        "y": 0.43978313253011947
+        "x": 5.113819985825655,
+        "y": 0.561
       },
       "prevControl": {
-        "x": 5.7833008852610766,
-        "y": 0.48581849451047665
+        "x": 6.386903036890461,
+        "y": 0.5394223211683924
       },
       "nextControl": {
-        "x": 2.849855108638417,
-        "y": 0.3796893748692107
+        "x": 4.810415308291992,
+        "y": 0.5661424521615878
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.713259036144578,
-        "y": 2.588
+        "x": 3.74,
+        "y": 0.75
       },
       "prevControl": {
-        "x": 2.778825687570604,
-        "y": 2.2601687519721896
+        "x": 4.175322466335933,
+        "y": 0.644195605953223
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RightTrenchShoot"
     }
   ],
   "rotationTargets": [
@@ -133,7 +133,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -142.80805558298965
+    "rotation": -110.0
   },
   "reversed": false,
   "folder": null,
