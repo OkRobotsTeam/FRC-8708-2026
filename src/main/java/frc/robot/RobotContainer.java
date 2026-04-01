@@ -165,6 +165,7 @@ public class RobotContainer {
         }
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
+
         autoChooser.addDefaultOption("None", new NoneAuto());
 
         autoChooser.onChange(auto -> {
@@ -227,20 +228,11 @@ public class RobotContainer {
                         () -> -driverController.getRightX()));
 
 
-//
-//        manipulatorController.x().onTrue(Commands.runOnce(shooter::shoot, shooter).andThen(() -> intake.wiggle(), intake));
-//        manipulatorController.x().onFalse(Commands.runOnce(shooter::stopShooting, shooter).andThen(() -> intake.stopWiggle(), intake));
-//        manipulatorController.a().onTrue(Commands.runOnce(shooter::toggleIdling, shooter));
-//
-//        manipulatorController.povDown().onTrue(Commands.runOnce(()-> shooter.setManualAngle(1), shooter));
 
+        manipulatorController.leftBumper().onTrue(Commands.runOnce(()-> shooter.setHoodPosition(0.2), shooter));
 
-        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::angleUp, shooter));
-        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::angleDown, shooter));
-//        manipulatorController.start().onTrue(Commands.runOnce(shooter::toggleAutoEverything, shooter));
-
-
-
+        manipulatorController.y().onTrue(Commands.runOnce(shooter::angleUp, shooter));
+        manipulatorController.b().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 
         manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::toggleIntake, intake));
         manipulatorController.rightBumper().onFalse(Commands.runOnce(intake::toggleIntake, intake));
@@ -248,16 +240,18 @@ public class RobotContainer {
         manipulatorController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
         manipulatorController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
 
+        manipulatorController.povRight().onTrue(Commands.runOnce(shooter::nextPreset, shooter));
+        manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::previousPreset, shooter));
 
-        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter));
-        manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
-        manipulatorController.start().onTrue(Commands.runOnce(shooter::setShooterModeManual, shooter));
+        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter)
+                .andThen(Commands.runOnce(() -> intake.wiggle(), intake)));
+        manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter)
+                .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake)));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(1), shooter));
-        manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter).andThen(() -> shooter.setTransferMotor(0.0), shooter));
-
-
-//        manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setManualAngle(0.1), shooter));
+        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.7), shooter)
+                .andThen(() -> shooter.setTransferMotor(0.3), shooter));
+        manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
+                .andThen(() -> shooter.setTransferMotor(0.0), shooter));
 
 
         driverController.leftBumper().whileTrue(
@@ -486,6 +480,8 @@ public class RobotContainer {
 //        System.out.println("Serial Number: " + System.getenv("serialnum"));
         SmartDashboard.putNumber("Shooter Speed", (int) shooter.manualSpeed);
         SmartDashboard.putNumber("Shooter Angle", (int) (shooter.hoodPosition * 100));
+        SmartDashboard.putString("Shooter Preset", shooter.currentPreset + "");
+
     }
 
     public void teleopPeriodic() {

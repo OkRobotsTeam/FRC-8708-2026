@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -24,11 +23,9 @@ import frc.robot.RobotState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-import javax.swing.text.html.Option;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
-import static edu.wpi.first.units.Units.Meters;
 
 /**
  * Subsystem to control two TalonFX motors independently (or optionally make the
@@ -37,7 +34,6 @@ import static edu.wpi.first.units.Units.Meters;
 public class Shooter extends SubsystemBase {
 //    public final LoggedTuneablePID rotationPID = new LoggedTuneablePID("/Shooter/RotationPID", ShooterConstants.ANGLER_P, ShooterConstants.ANGLER_I, ShooterConstants.ANGLER_D);
 //    public final LoggedTuneablePID shooterPID = new LoggedTuneablePID("/Shooter/ShooterPID", ShooterConstants.FLYWHEEL_P, ShooterConstants.FLYWHEEL_I, ShooterConstants.FLYWHEEL_D);
-    Encoder encoder = new Encoder(ShooterConstants.ENCODER_CHANNEL_A, ShooterConstants.ENCODER_CHANNEL_B, ShooterConstants.ENCODER_REVERSED, ShooterConstants.ENCODER_ENCODING_TYPE);
 
     private final TalonFX flywheelMotor1;
     private final TalonFX flywheelMotor2;
@@ -65,7 +61,11 @@ public class Shooter extends SubsystemBase {
     public double hoodPosition = 0;
     public double manualHoodPosition = 0;
 
-    private double encoderOffset = 0;
+    private long timer = 0;
+
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(30.0, 40.0, 50.0));
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.3, 0.4, 0.5));
+    public int currentPreset = 0;
 
 
     public Shooter() {
@@ -76,7 +76,7 @@ public class Shooter extends SubsystemBase {
 
         var configs = new MotorOutputConfigs();
 
-        configs.Inverted = InvertedValue.Clockwise_Positive;
+        configs.Inverted = InvertedValue.CounterClockwise_Positive;
         configs.NeutralMode = NeutralModeValue.Brake;
 
         // APPLY CURRENT LIMITS
@@ -85,20 +85,19 @@ public class Shooter extends SubsystemBase {
         injector.getConfigurator().apply(Constants.INJECTOR_CURRENT_LIMITS);
         transfer.getConfigurator().apply(Constants.TRANSFER_CURRENT_LIMITS);
 
-        injector.getConfigurator().apply(configs);
+        configs.Inverted = InvertedValue.Clockwise_Positive;
         transfer.getConfigurator().apply(configs);
+        flywheelMotor2.getConfigurator().apply(configs);
 
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
-        flywheelMotor2.getConfigurator().apply(configs);
+        injector.getConfigurator().apply(configs);
+        flywheelMotor1.getConfigurator().apply(configs);
         flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
 
         flywheelMotor1.setPosition(0.0);
         flywheelMotor2.setPosition(0.0);
         hoodServo1.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
         hoodServo2.setPosition(ShooterConstants.HOOD_STARTING_POSITION);
-
-//        encoderOffset = encoder.getDistance();
-        encoderOffset = 0;
 
         TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration(); // Start with factory defaults
         Slot0Configs slot0Configs = new Slot0Configs();
@@ -109,14 +108,6 @@ public class Shooter extends SubsystemBase {
         flywheelMotor1.getConfigurator().apply(slot0Configs);
         flywheelMotor2.getConfigurator().apply(slot0Configs);
 
-        slot0Configs.kP = ShooterConstants.HOOD_P;
-        slot0Configs.kV = ShooterConstants.HOOD_V;
-        slot0Configs.kD = ShooterConstants.HOOD_D;
-
-
-//        slot0Configs.kP = ShooterConstants.TRANSFER_P;
-//        slot0Configs.kV = ShooterConstants.TRANSFER_V;
-//        slot0Configs.kD = ShooterConstants.TRANSFER_D;
     }
 
     public void setShooterModeStopped() {
@@ -182,50 +173,70 @@ public class Shooter extends SubsystemBase {
         updateFlywheelSpeed();
     }
 
-    public void setManualAngle(double input) {
+    public void setHoodPosition(double input) {
         manualHoodPosition = MathUtil.clamp(input, 0, 1);
         System.out.println("Changing manual hood angle to " + manualHoodPosition);
         updateHoodAngle();
     }
 
     public void faster() {
-        setManualSpeed(manualSpeed + 5);
-        updateFlywheelSpeed();
+        shooterSpeeds.set(currentPreset, MathUtil.clamp((shooterSpeeds.get(currentPreset) + 1), 0, 100));
+        setManualSpeed(shooterSpeeds.get(currentPreset));
         System.out.println("Faster");
     }
 
     public void slower() {
-        setManualSpeed(manualSpeed - 5);
-        updateFlywheelSpeed();
+        shooterSpeeds.set(currentPreset, MathUtil.clamp((shooterSpeeds.get(currentPreset) - 1), 0, 100));
+        setManualSpeed(shooterSpeeds.get(currentPreset));
+        System.out.println("Slower");
     }
 
     public void angleUp() {
-        setManualAngle(manualHoodPosition + 0.1);
+        hoodPositions.set(currentPreset, MathUtil.clamp((hoodPositions.get(currentPreset) + 0.05), 0, 1));
+        setHoodPosition(hoodPositions.get(currentPreset));
     }
 
     public void angleDown() {
-        setManualAngle(manualHoodPosition - 0.1);
+        hoodPositions.set(currentPreset, MathUtil.clamp((hoodPositions.get(currentPreset) - 0.05), 0, 1));
+        setHoodPosition(hoodPositions.get(currentPreset));
+    }
+
+    public void nextPreset() {
+        currentPreset = MathUtil.clamp(currentPreset + 1, 0, shooterSpeeds.size() - 1);
+        setManualSpeed(shooterSpeeds.get(currentPreset));
+        setHoodPosition(hoodPositions.get(currentPreset));
+        System.out.println("Next Preset");
+    }
+
+    public void previousPreset() {
+        currentPreset = MathUtil.clamp(currentPreset - 1, 0, shooterSpeeds.size() - 1);
+        setManualSpeed(shooterSpeeds.get(currentPreset));
+        setHoodPosition(hoodPositions.get(currentPreset));
+        System.out.println("Previous Preset");
     }
 
     public void updateHoodAngle() {
-//        if (isShooting) {
-//            if (autoHoodAngle) {
-//                autoCalculateHoodAngle();
-//                hoodPosition = automaticHoodPosition;
-//            } else {
-//                hoodPosition = manualHoodPosition;
-//            }
-//        } else {
-//            hoodPosition = 0;
-//        }
+        timer = System.currentTimeMillis() + 0;
+        updateLeftHoodAngle();
+
+    }
+
+    public void updateRightHoodAngle() {
         hoodPosition = manualHoodPosition;
 
         hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
-        //hoodMotorPosition = hoodPosition * ShooterConstants.MAXIMUM_ANGULAR_ROTATIONS;
-        hoodServo1.setPosition(hoodPosition);
         hoodServo2.setPosition(hoodPosition);
-        Logger.recordOutput("Shooter/Angler", hoodPosition);
-        System.out.println("Shooter/Angler" + hoodPosition);
+        Logger.recordOutput("Shooter/RightServo", hoodPosition);
+        //System.out.println("Shooter/RightServo" + hoodPosition);
+    }
+
+    public void updateLeftHoodAngle() {
+        hoodPosition = manualHoodPosition;
+
+        hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
+        hoodServo1.setPosition(hoodPosition);
+        Logger.recordOutput("Shooter/LeftServo", hoodPosition);
+        System.out.println("Shooter/LeftServo" + hoodPosition);
     }
 
     public void autoCalculateHoodAngle() {
@@ -378,6 +389,10 @@ public class Shooter extends SubsystemBase {
 
         Translation2d shootingPosition = calculateShootingPosition();
         Logger.recordOutput("Shooter/shootingPosition", shootingPosition);
+
+        if (System.currentTimeMillis() >= timer) {
+            updateRightHoodAngle();
+        }
 //
 //        if (isShooting && isSpunUp()) {
 //            setInjectorMotor(0.6);
