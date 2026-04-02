@@ -229,7 +229,7 @@ public class RobotContainer {
 
 
 
-        manipulatorController.leftBumper().onTrue(Commands.runOnce(()-> shooter.setHoodPosition(0.2), shooter));
+        manipulatorController.start().onTrue(Commands.runOnce(()-> shooter.setHoodPosition(0.2), shooter));
 
         manipulatorController.y().onTrue(Commands.runOnce(shooter::angleUp, shooter));
         manipulatorController.b().onTrue(Commands.runOnce(shooter::angleDown, shooter));
@@ -248,9 +248,14 @@ public class RobotContainer {
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter)
                 .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake)));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.7), shooter)
-                .andThen(() -> shooter.setTransferMotor(0.3), shooter));
+        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.8), shooter)
+                .andThen(() -> shooter.setTransferMotor(0.5), shooter));
         manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
+                .andThen(() -> shooter.setTransferMotor(0.0), shooter));
+
+        manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(-0.8), shooter)
+                .andThen(() -> shooter.setTransferMotor(-0.5), shooter));
+        manipulatorController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter));
 
 

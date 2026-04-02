@@ -51,7 +51,7 @@ public class Shooter extends SubsystemBase {
     public boolean autoSpeedMode = false;
     public boolean autoHoodAngle;
     public double motorSpeed = 0;
-    public double manualSpeed = 35;
+    public double manualSpeed = 45;
     private double automaticSpeed = 0.0;
 
     private final RobotState robotState = RobotState.getInstance();
@@ -63,8 +63,8 @@ public class Shooter extends SubsystemBase {
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(30.0, 40.0, 50.0));
-    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.3, 0.4, 0.5));
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 54.0, 55.0, 70.0));
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7));
     public int currentPreset = 0;
 
 
@@ -173,8 +173,13 @@ public class Shooter extends SubsystemBase {
         updateFlywheelSpeed();
     }
 
+    public double clampHoodPosition(double input) {
+        return MathUtil.clamp(input, 0.2, 0.7);
+    }
+
     public void setHoodPosition(double input) {
-        manualHoodPosition = MathUtil.clamp(input, 0, 1);
+
+        manualHoodPosition = clampHoodPosition(input);
         System.out.println("Changing manual hood angle to " + manualHoodPosition);
         updateHoodAngle();
     }
@@ -191,13 +196,14 @@ public class Shooter extends SubsystemBase {
         System.out.println("Slower");
     }
 
+
     public void angleUp() {
-        hoodPositions.set(currentPreset, MathUtil.clamp((hoodPositions.get(currentPreset) + 0.05), 0, 1));
+        hoodPositions.set(currentPreset , clampHoodPosition(hoodPositions.get(currentPreset) + 0.01));
         setHoodPosition(hoodPositions.get(currentPreset));
     }
 
     public void angleDown() {
-        hoodPositions.set(currentPreset, MathUtil.clamp((hoodPositions.get(currentPreset) - 0.05), 0, 1));
+        hoodPositions.set(currentPreset , clampHoodPosition(hoodPositions.get(currentPreset) - 0.01));
         setHoodPosition(hoodPositions.get(currentPreset));
     }
 

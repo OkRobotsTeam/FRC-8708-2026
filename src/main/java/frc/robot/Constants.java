@@ -59,7 +59,7 @@ public final class Constants {
 
     public static final CurrentLimitsConfigs INJECTOR_CURRENT_LIMITS =
             new CurrentLimitsConfigs()
-                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimit(60)
                     .withSupplyCurrentLimitEnable(true);
 
 
@@ -144,14 +144,18 @@ public final class Constants {
         public static final int INTAKE_MOTOR_ID = 6;
         public static final int INTAKE_EXTENDER_ID = 7;
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
-        public static final double KP = 0.1;
+        public static final double KP = 0.2;
         public static final double KI = 0;
         public static final double KD = 0;
         public static final double KV = 0.125;
-        public static final int EXTENDED_POSITION = 5; //TODO GET POSITION
-        public static final int RETRACTED_POSITION = 0; //TODO GET POSITION
+        public static final double EXTENDED_POSITION = 0.25;
+        public static final int RETRACTED_POSITION = 0;
         public static final double INTAKE_ROTATION_GEAR_RATIO = 19.42;
         public static final double WIGGLE_ROTATIONS = 1;
+        public static final int ENCODER_CHANNEL_A = 1;
+        public static final int ENCODER_CHANNEL_B = 2;
+        public static final boolean ENCODER_REVERSED = false;
+        public static final CounterBase.EncodingType ENCODER_ENCODING_TYPE = Encoder.EncodingType.k4X;
     }
 
     public static final class PathConstants {
