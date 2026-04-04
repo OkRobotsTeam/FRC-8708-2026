@@ -246,7 +246,7 @@ public class RobotContainer {
         manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter)
                 .andThen(Commands.runOnce(() -> intake.wiggle(), intake)));
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter)
-                .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake)));
+                .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake).andThen(Commands.runOnce(() -> intake.retractIntake(), intake))));
 
         manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.8), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.5), shooter));
@@ -449,15 +449,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("runIntake", new InstantCommand(() -> intake.runSpeed(0.5)));
         NamedCommands.registerCommand("extendIntake", new InstantCommand(() -> intake.extendIntake()));
         NamedCommands.registerCommand("retractIntake", new InstantCommand(() -> intake.retractIntake()));
-//        NamedCommands.registerCommand("shoot40Inches", new InstantCommand(() -> shooter.manualShoot(50,0.8)));
-//        NamedCommands.registerCommand("shoot92.5Inches", new InstantCommand(() -> shooter.manualShoot(70, 0.8)));
-        NamedCommands.registerCommand("shoot50", new InstantCommand(() -> shooter.setManualSpeed(50)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shoot40", new InstantCommand(() -> shooter.setManualSpeed(40)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shoot35", new InstantCommand(() -> shooter.setManualSpeed(35)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shoot33", new InstantCommand(() -> shooter.setManualSpeed(33)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shoot30", new InstantCommand(() -> shooter.setManualSpeed(30)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shoot25", new InstantCommand(() -> shooter.setManualSpeed(25)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shoot20", new InstantCommand(() -> shooter.setManualSpeed(20)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootClose", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(1)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("stopShooter", new InstantCommand(() -> shooter.setFlywheelSpeedPercent(0)).andThen(() -> shooter.setShooterModeStopped()));
         NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(50), shooter).andThen(() -> shooter.setTransferMotor(100)));
         NamedCommands.registerCommand("stopInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(0), shooter).andThen(() -> shooter.setTransferMotor(0)));
@@ -486,6 +480,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shooter Speed", (int) shooter.manualSpeed);
         SmartDashboard.putNumber("Shooter Angle", (int) (shooter.hoodPosition * 100));
         SmartDashboard.putString("Shooter Preset", shooter.currentPreset + "");
+        SmartDashboard.putBoolean(" Preset", Math.abs(shooter.motorSpeed - shooter.flywheelMotor1.getVelocity().getValueAsDouble()) < 10);
 
     }
 

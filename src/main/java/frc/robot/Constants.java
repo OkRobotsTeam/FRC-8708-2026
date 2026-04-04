@@ -148,8 +148,9 @@ public final class Constants {
         public static final double KI = 0;
         public static final double KD = 0;
         public static final double KV = 0.125;
-        public static final double EXTENDED_POSITION = 0.25;
-        public static final int RETRACTED_POSITION = 0;
+        public static final double EXTENDED_POSITION = 1280;
+        public static final double RETRACTED_POSITION = 0;
+        public static final double WIGGLE_OUT_POSITION = 400;
         public static final double INTAKE_ROTATION_GEAR_RATIO = 19.42;
         public static final double WIGGLE_ROTATIONS = 1;
         public static final int ENCODER_CHANNEL_A = 1;

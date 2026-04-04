@@ -11,9 +11,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -35,12 +37,16 @@ public class Shooter extends SubsystemBase {
 //    public final LoggedTuneablePID rotationPID = new LoggedTuneablePID("/Shooter/RotationPID", ShooterConstants.ANGLER_P, ShooterConstants.ANGLER_I, ShooterConstants.ANGLER_D);
 //    public final LoggedTuneablePID shooterPID = new LoggedTuneablePID("/Shooter/ShooterPID", ShooterConstants.FLYWHEEL_P, ShooterConstants.FLYWHEEL_I, ShooterConstants.FLYWHEEL_D);
 
-    private final TalonFX flywheelMotor1;
-    private final TalonFX flywheelMotor2;
+    public final TalonFX flywheelMotor1;
+    public final TalonFX flywheelMotor2;
     private final TalonFX injector;
     private final TalonFX transfer;
     private final Servo hoodServo1 = new Servo(ShooterConstants.SERVO_1);
     private final Servo hoodServo2 = new Servo(ShooterConstants.SERVO_2);
+
+    private final PWMSparkMax servo1 = new PWMSparkMax(2);
+    AnalogPotentiometer potentiometer = new AnalogPotentiometer(0, 1, 0);
+
 
     private final VelocityDutyCycle velocityDutyCycle = new VelocityDutyCycle(0);
     private final DutyCycleOut dutyCycleOut = new DutyCycleOut(0);
@@ -63,8 +69,10 @@ public class Shooter extends SubsystemBase {
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 54.0, 55.0, 70.0));
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 50.0, 55.0, 70.0));
+//    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0));
     public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7));
+//    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0));
     public int currentPreset = 0;
 
 
@@ -180,7 +188,7 @@ public class Shooter extends SubsystemBase {
     public void setHoodPosition(double input) {
 
         manualHoodPosition = clampHoodPosition(input);
-        System.out.println("Changing manual hood angle to " + manualHoodPosition);
+//        System.out.println("Changing manual hood angle to " + manualHoodPosition);
         updateHoodAngle();
     }
 
@@ -207,17 +215,23 @@ public class Shooter extends SubsystemBase {
         setHoodPosition(hoodPositions.get(currentPreset));
     }
 
+    public void selectPreset(int preset) {
+        currentPreset = preset;
+        setHoodPosition(hoodPositions.get(currentPreset));
+        setManualSpeed(shooterSpeeds.get(currentPreset));
+    }
+
     public void nextPreset() {
         currentPreset = MathUtil.clamp(currentPreset + 1, 0, shooterSpeeds.size() - 1);
         setManualSpeed(shooterSpeeds.get(currentPreset));
-        setHoodPosition(hoodPositions.get(currentPreset));
+//        setHoodPosition(hoodPositions.get(currentPreset));
         System.out.println("Next Preset");
     }
 
     public void previousPreset() {
         currentPreset = MathUtil.clamp(currentPreset - 1, 0, shooterSpeeds.size() - 1);
         setManualSpeed(shooterSpeeds.get(currentPreset));
-        setHoodPosition(hoodPositions.get(currentPreset));
+//        setHoodPosition(hoodPositions.get(currentPreset));
         System.out.println("Previous Preset");
     }
 
@@ -232,8 +246,19 @@ public class Shooter extends SubsystemBase {
 
         hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
         hoodServo2.setPosition(hoodPosition);
+
+
         Logger.recordOutput("Shooter/RightServo", hoodPosition);
         //System.out.println("Shooter/RightServo" + hoodPosition);
+    }
+
+    public void runServo() {
+
+        double currentPosition = potentiometer.get();
+        servo1.set(-(hoodPosition - currentPosition) * 10);
+        Logger.recordOutput("Shooter/ServoAnalogPosition", currentPosition);
+//        Logger.recordOutput("Shooter/ServoTarget", currentPosition);
+
     }
 
     public void updateLeftHoodAngle() {
@@ -242,7 +267,7 @@ public class Shooter extends SubsystemBase {
         hoodPosition = MathUtil.clamp(hoodPosition, 0, 1);
         hoodServo1.setPosition(hoodPosition);
         Logger.recordOutput("Shooter/LeftServo", hoodPosition);
-        System.out.println("Shooter/LeftServo" + hoodPosition);
+//        System.out.println("Shooter/LeftServo" + hoodPosition);
     }
 
     public void autoCalculateHoodAngle() {
@@ -409,6 +434,15 @@ public class Shooter extends SubsystemBase {
 //        if (autoSpeedMode) {
 //            updateFlywheelSpeed();
 //        }
+
+        if (isShooting) {
+            setHoodPosition(hoodPositions.get(currentPreset));
+        } else {
+            setHoodPosition(0.2);
+
+        }
+
+        runServo();
 
 
         updateFlywheelSpeed();
