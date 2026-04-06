@@ -28,7 +28,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakeMotor;
     private final TalonFX intakeExtender;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
-    double intakeSpeed = 0.8;
+    public double intakeSpeed = 0.65;
     public int currentState = 0;
     private double targetPosition = 0;
     private boolean wiggling = false;
@@ -177,7 +177,7 @@ public class Intake extends SubsystemBase {
         //System.out.println("Target position: " + targetPosition + " Current position: " + intakeActuator.getPosition());
 
         if (wiggling & (targetPosition < IntakeConstants.EXTENDED_POSITION)) {
-            System.out.println("Wiggling");
+//            System.out.println("Wiggling");
             if ((System.currentTimeMillis() % 500) > 250) {
                 //intakeExtender.setControl(new VelocityDutyCycle(0));
                 targetPosition = IntakeConstants.WIGGLE_OUT_POSITION;

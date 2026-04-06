@@ -19,7 +19,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 3.0
           }
         },
         {
@@ -31,7 +31,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 8.0
+            "waitTime": 6.0
           }
         },
         {
@@ -44,6 +44,24 @@
           "type": "wait",
           "data": {
             "waitTime": 2.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runInjectorAndTransfer"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopInjectorAndTransfer"
           }
         },
         {

@@ -69,10 +69,11 @@ public class Shooter extends SubsystemBase {
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 50.0, 55.0, 70.0));
-//    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0));
-    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7));
-//    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0));
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 50.0, 70.0, 100.0)); // with hood
+//    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0)); //no hood
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.15, 0.12, 0.6, 0.85)); // five wire servo
+//    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7)); // three wire servo
+//    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0)); // no hood
     public int currentPreset = 0;
 
 
@@ -182,7 +183,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double clampHoodPosition(double input) {
-        return MathUtil.clamp(input, 0.2, 0.7);
+        return MathUtil.clamp(input, 0.0, 1);
     }
 
     public void setHoodPosition(double input) {
@@ -249,7 +250,7 @@ public class Shooter extends SubsystemBase {
 
 
         Logger.recordOutput("Shooter/RightServo", hoodPosition);
-        //System.out.println("Shooter/RightServo" + hoodPosition);
+//        System.out.println("Shooter/RightServo" + hoodPosition);
     }
 
     public void runServo() {
@@ -435,11 +436,11 @@ public class Shooter extends SubsystemBase {
 //            updateFlywheelSpeed();
 //        }
 
+//        System.out.println("Current Servo Position: " + servo1.get());
         if (isShooting) {
             setHoodPosition(hoodPositions.get(currentPreset));
         } else {
-            setHoodPosition(0.2);
-
+            setHoodPosition(0.0);
         }
 
         runServo();

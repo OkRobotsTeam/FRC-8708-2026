@@ -234,8 +234,8 @@ public class RobotContainer {
         manipulatorController.y().onTrue(Commands.runOnce(shooter::angleUp, shooter));
         manipulatorController.b().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 
-        manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::toggleIntake, intake));
-        manipulatorController.rightBumper().onFalse(Commands.runOnce(intake::toggleIntake, intake));
+        manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::extendIntake, intake));
+        manipulatorController.rightBumper().onFalse(Commands.runOnce(intake::retractIntake, intake));
 
         manipulatorController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
         manipulatorController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
@@ -254,9 +254,9 @@ public class RobotContainer {
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter));
 
         manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(-0.8), shooter)
-                .andThen(() -> shooter.setTransferMotor(-0.5), shooter));
+                .andThen(() -> shooter.setTransferMotor(-0.5), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(-intake.intakeSpeed), intake)));
         manipulatorController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
-                .andThen(() -> shooter.setTransferMotor(0.0), shooter));
+                .andThen(() -> shooter.setTransferMotor(0.0), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(0), intake)));
 
 
         driverController.leftBumper().whileTrue(
