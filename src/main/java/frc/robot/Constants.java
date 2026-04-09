@@ -42,7 +42,7 @@ public final class Constants {
 
     public static final CurrentLimitsConfigs FLYWHEEL_CURRENT_LIMITS =
             new CurrentLimitsConfigs()
-                    .withSupplyCurrentLimit(30)
+                    .withSupplyCurrentLimit(50)
                     .withSupplyCurrentLimitEnable(true);
 
     public static final CurrentLimitsConfigs INTAKE_WHEEL_CURRENT_LIMITS =
@@ -130,9 +130,9 @@ public final class Constants {
         public static final int SERVO_2 = 1;
         public static final double HOOD_STARTING_POSITION = 0.0; //TODO UPDATE
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
-        public static final double FLYWHEEL_P = 0.2;
+        public static final double FLYWHEEL_P = 0.6;
         public static final double FLYWHEEL_I = 0;
-        public static final double FLYWHEEL_D = 0.01;
+        public static final double FLYWHEEL_D = 0;
         public static final double FLYWHEEL_V = 0.15;
         public static final int MAXIMUM_ANGULAR_ROTATIONS = 10; //TODO UPDATE
         public static final double SPEED_TOLERANCE = 5; //TODO UPDATE
@@ -144,6 +144,10 @@ public final class Constants {
         public static final int INTAKE_MOTOR_ID = 6;
         public static final int INTAKE_EXTENDER_ID = 7;
         public static final int TICKS_PER_REV = 2048; // TalonFX integrated sensor
+        public static final double EXTENDER_KP = 0.2;
+        public static final double EXTENDER_KI = 0;
+        public static final double EXTENDER_KD = 0;
+        public static final double EXTENDER_KV = 0.125;
         public static final double KP = 0.2;
         public static final double KI = 0;
         public static final double KD = 0;

@@ -234,8 +234,13 @@ public class RobotContainer {
         manipulatorController.y().onTrue(Commands.runOnce(shooter::angleUp, shooter));
         manipulatorController.b().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 
-        manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::extendIntake, intake));
-        manipulatorController.rightBumper().onFalse(Commands.runOnce(intake::retractIntake, intake));
+        manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::toggleIntake, intake));
+
+        manipulatorController.rightTrigger().onTrue(Commands.runOnce(intake::run, intake));
+        manipulatorController.rightTrigger().onFalse(Commands.runOnce(intake::stop, intake));
+
+        manipulatorController.leftTrigger().onTrue(Commands.runOnce(intake::runBackwards, intake));
+        manipulatorController.leftTrigger().onFalse(Commands.runOnce(intake::stop, intake));
 
         manipulatorController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
         manipulatorController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
@@ -246,7 +251,7 @@ public class RobotContainer {
         manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter)
                 .andThen(Commands.runOnce(() -> intake.wiggle(), intake)));
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter)
-                .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake).andThen(Commands.runOnce(() -> intake.retractIntake(), intake))));
+                .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake)));
 
         manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.8), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.5), shooter));

@@ -10,7 +10,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.LoggedTuneablePID;
 import frc.robot.Constants;
@@ -28,11 +27,13 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakeMotor;
     private final TalonFX intakeExtender;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
-    public double intakeSpeed = 0.65;
+    public double intakeSpeed = 0.5;
     public int currentState = 0;
     private double targetPosition = 0;
     private boolean wiggling = false;
     private double encoderOffset = 0;
+    private enum IntakeState {FORWARDS, STOPPED, BACKWARDS};
+    IntakeState intakeState = IntakeState.STOPPED;
     Encoder encoder = new Encoder(IntakeConstants.ENCODER_CHANNEL_A, IntakeConstants.ENCODER_CHANNEL_B, IntakeConstants.ENCODER_REVERSED, IntakeConstants.ENCODER_ENCODING_TYPE);
 
     public Intake() {
@@ -68,18 +69,24 @@ public class Intake extends SubsystemBase {
 
         TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration(); // Start with factory defaults
         Slot0Configs slot0Configs = new Slot0Configs();
-        slot0Configs.kP = IntakeConstants.KP;
-        slot0Configs.kV = IntakeConstants.KV;
-        slot0Configs.kD = IntakeConstants.KD;
+        slot0Configs.kP = IntakeConstants.EXTENDER_KP;
+        slot0Configs.kV = IntakeConstants.EXTENDER_KV;
+        slot0Configs.kD = IntakeConstants.EXTENDER_KD;
 
         intakeExtender.getConfigurator().apply(slot0Configs);
+
+
+        slot0Configs.kP = Constants.IntakeConstants.KP;
+        slot0Configs.kV = Constants.IntakeConstants.KV;
+        slot0Configs.kD = Constants.IntakeConstants.KD;
+        intakeMotor.getConfigurator().apply(slot0Configs);
+
 
         encoder.reset();
 
         encoderOffset = encoder.getDistance();
         
     }
-
 
 
     public void extendIntake() {
@@ -99,10 +106,8 @@ public class Intake extends SubsystemBase {
     public void toggleIntake() {
         if (currentState == 0) {
             extendIntake();
-//            runSpeed(intakeSpeed);
         } else if (currentState == 1) {
             retractIntake();
-            runSpeed(0.0);
         }
     }
 
@@ -115,17 +120,27 @@ public class Intake extends SubsystemBase {
     }
 
     public void setIntakeSpeed(double percent) {
-        intakeMotor.setControl(m_dutyCycle.withOutput(percent));
+        double speed = percent * 100.0;
+//        System.out.println("Setting speed to" + speed);
+        intakeMotor.setControl(new VelocityVoltage(speed));
     }
 
+
     public void stop() {
-        setIntakeSpeed(0.0);
-//        System.out.println("Stopping Intake");
+        intakeState = IntakeState.STOPPED;
+        System.out.println("Stopping Intake");
     }
 
     public void run() {
-        setIntakeSpeed(intakeSpeed);
-//        System.out.println("Running Intake");
+        extendIntake();
+        intakeState = IntakeState.FORWARDS;
+        System.out.println("Running Intake");
+    }
+
+    public void runBackwards() {
+        extendIntake();
+        intakeState = IntakeState.BACKWARDS;
+        System.out.println("Running Intake Backwards");
     }
 
     public void runSpeed(Double speed) {
@@ -140,7 +155,7 @@ public class Intake extends SubsystemBase {
         } else if (intakeSpeed < -1) {
             intakeSpeed = -1;
         }
-        System.out.println("Setting intake speed to :" + intakeSpeed);
+//        System.out.println("Setting intake speed to :" + intakeSpeed);
     }
 
     public void setExtenderTarget(double position) {
@@ -155,7 +170,6 @@ public class Intake extends SubsystemBase {
 //            System.out.println("Target Position: " +  targetPosition + " current encoder position: "
 //                    + currentEncoderPosition + " current motor position: " + currentMotorPosition + " target motor position: " + (motorError + currentMotorPosition));
         }
-
 
     }
 
@@ -188,11 +202,17 @@ public class Intake extends SubsystemBase {
         }
         setExtenderTarget(targetPosition);
 
-        if (encoder.getDistance() > 600) {
-            runSpeed(intakeSpeed);
-        } else {
+        if (encoder.getDistance() < 600) {
             runSpeed(0.0);
+        } else
+//            System.out.println("IS: " + intakeState.name());
+            switch (intakeState) {
+                case STOPPED -> runSpeed(0.0);
+                case FORWARDS -> runSpeed(intakeSpeed);
+                case BACKWARDS -> runSpeed(-intakeSpeed);
         }
+
+
 
 //        System.out.println("Position: " +  encoder.getDistance() / 2048 + " PID Target: " + positionPID.getSetpoint() + " PID Output: " + pidOutput);
 
