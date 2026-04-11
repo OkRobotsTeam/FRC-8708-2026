@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase {
     public double intakeSpeed = 0.5;
     public int currentState = 0;
     private double targetPosition = 0;
-    private boolean wiggling = false;
+    private boolean shooting = false;
     private double encoderOffset = 0;
     private enum IntakeState {FORWARDS, STOPPED, BACKWARDS};
     IntakeState intakeState = IntakeState.STOPPED;
@@ -111,12 +111,12 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public void wiggle() {
-        wiggling = true;
+    public void setShooting() {
+        shooting = true;
     }
 
-    public void stopWiggle() {
-        wiggling = false;
+    public void stopShooting() {
+        shooting = false;
     }
 
     public void setIntakeSpeed(double percent) {
@@ -190,16 +190,11 @@ public class Intake extends SubsystemBase {
 
         //System.out.println("Target position: " + targetPosition + " Current position: " + intakeActuator.getPosition());
 
-        if (wiggling & (targetPosition < IntakeConstants.EXTENDED_POSITION)) {
-//            System.out.println("Wiggling");
-            if ((System.currentTimeMillis() % 500) > 250) {
-                //intakeExtender.setControl(new VelocityDutyCycle(0));
-                targetPosition = IntakeConstants.WIGGLE_OUT_POSITION;
-            } else {
-                //intakeExtender.setControl(new VelocityDutyCycle(IntakeConstants.WIGGLE_ROTATIONS));
-                targetPosition = IntakeConstants.RETRACTED_POSITION;
-            }
+        if (shooting & (encoder.get() > 100 )) {
+
+            targetPosition = targetPosition - 10;
         }
+
         setExtenderTarget(targetPosition);
 
         if (encoder.getDistance() < 600) {

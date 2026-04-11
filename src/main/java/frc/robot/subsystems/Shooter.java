@@ -66,12 +66,13 @@ public class Shooter extends SubsystemBase {
     public double hoodMotorPosition = 0;
     public double hoodPosition = 0;
     public double manualHoodPosition = 0;
+    protected final CoastOut coastControl = new CoastOut();
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 50.0, 55.0, 70.0, 100.0)); // with hood
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 52.0, 58.0, 70.0, 100.0)); // with hood
 //    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0)); //no hood
-    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.15, 0.12, 0.16, 0.6, 0.85)); // five wire servo
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.15, 0.16, 0.13, 0.6, 0.85)); // five wire servo
 //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7)); // three wire servo
 //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0)); // no hood
     public int currentPreset = 0;
@@ -101,7 +102,7 @@ public class Shooter extends SubsystemBase {
         configs.Inverted = InvertedValue.CounterClockwise_Positive;
         injector.getConfigurator().apply(configs);
         flywheelMotor1.getConfigurator().apply(configs);
-        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
+//        flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Opposed));
 
         flywheelMotor1.setPosition(0.0);
         flywheelMotor2.setPosition(0.0);
@@ -318,12 +319,15 @@ public class Shooter extends SubsystemBase {
      * Set both motors to the same percent output.
      */
     public void setFlywheelSpeedPercent(double percent) {
-        flywheelMotor2.setControl(new VelocityVoltage(percent));
         Logger.recordOutput("Shooter/FlywheelSpeed", percent);
+//        System.out.println(percent);
         if (percent > 1 ) {
-            flywheelMotor1.setControl(new VelocityVoltage(percent));
+//            flywheelMotor1.setControl(new VelocityVoltage(percent));
+            flywheelMotor1.setControl(new VelocityTorqueCurrentFOC(percent));
+            flywheelMotor2.setControl(new VelocityTorqueCurrentFOC(percent));
         } else {
             flywheelMotor1.setControl(new DutyCycleOut(0));
+            flywheelMotor2.setControl(new DutyCycleOut(0));
         }
         motorSpeed = percent;
 //        System.out.println("setting both percent to " + percent);

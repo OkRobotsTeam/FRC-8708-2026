@@ -248,10 +248,8 @@ public class RobotContainer {
         manipulatorController.povRight().onTrue(Commands.runOnce(shooter::nextPreset, shooter));
         manipulatorController.povLeft().onTrue(Commands.runOnce(shooter::previousPreset, shooter));
 
-        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter)
-                .andThen(Commands.runOnce(() -> intake.wiggle(), intake)));
-        manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter)
-                .andThen(Commands.runOnce(() -> intake.stopWiggle(), intake)));
+        manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter));
+        manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
 
         manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.8), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.5), shooter));
