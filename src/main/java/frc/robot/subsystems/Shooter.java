@@ -430,6 +430,16 @@ public class Shooter extends SubsystemBase {
         Translation2d shootingPosition = calculateShootingPosition();
         Logger.recordOutput("Shooter/shootingPosition", shootingPosition);
 
+//        if (isShooting) {
+//            if (injector.getSupplyCurrent().getValueAsDouble() > 30.0) {
+//                setInjectorMotor(-0.6);
+//            } else {
+//                setInjectorMotor(0.6);
+//            }
+//        } else {
+//            setInjectorMotor(0);
+//        }
+
         if (System.currentTimeMillis() >= timer) {
             updateRightHoodAngle();
         }

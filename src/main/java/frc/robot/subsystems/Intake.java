@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX intakeMotor;
     private final TalonFX intakeExtender;
     private final DutyCycleOut m_dutyCycle = new DutyCycleOut(0);
-    public double intakeSpeed = 0.5;
+    public double intakeSpeed = 0.7;
     public int currentState = 0;
     private double targetPosition = 0;
     private boolean shooting = false;

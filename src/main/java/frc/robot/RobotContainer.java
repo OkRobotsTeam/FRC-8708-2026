@@ -449,14 +449,16 @@ public class RobotContainer {
                 new Pose2d(robotState.getEstimatedPose().getTranslation(),
                         DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(DriverStation.Alliance.Red) ? Rotation2d.k180deg: Rotation2d.kZero )
         ))));
-        NamedCommands.registerCommand("runIntake", new InstantCommand(() -> intake.runSpeed(0.5)));
+        NamedCommands.registerCommand("runIntake", new InstantCommand(intake::run, intake));
+        NamedCommands.registerCommand("stopIntake", new InstantCommand(intake::stop, intake));
         NamedCommands.registerCommand("extendIntake", new InstantCommand(() -> intake.extendIntake()));
         NamedCommands.registerCommand("retractIntake", new InstantCommand(() -> intake.retractIntake()));
         NamedCommands.registerCommand("shootClose", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(1)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("stopShooter", new InstantCommand(() -> shooter.setFlywheelSpeedPercent(0)).andThen(() -> shooter.setShooterModeStopped()));
-        NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(50), shooter).andThen(() -> shooter.setTransferMotor(100)));
+        NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(80), shooter).andThen(() -> shooter.setTransferMotor(50)));
+        NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-80), shooter).andThen(() -> shooter.setTransferMotor(-50)));
         NamedCommands.registerCommand("stopInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(0), shooter).andThen(() -> shooter.setTransferMotor(0)));
 
     }
@@ -467,6 +469,10 @@ public class RobotContainer {
 
     public void teleopInit() {
         drive.setSpeedMultiplier(1);
+        intake.stop();
+        shooter.setShooterModeStopped();
+        shooter.setTransferMotor(0);
+        shooter.setInjectorMotor(0);
     }
 
     public void autonomousInit() {

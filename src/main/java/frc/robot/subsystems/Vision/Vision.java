@@ -95,7 +95,7 @@ public class Vision extends SubsystemBase {
             } else if (observation.pose.getY() < 0.0 || observation.pose.getY() > APRILTAG_LAYOUT.getFieldWidth()) {
                 rejectPose = true;
                 rejectionReason = "Y position outside field boundaries (0 to " + APRILTAG_LAYOUT.getFieldWidth() + ").";
-            } else if (observation.avgTagDist > 2.5) {
+            } else if (observation.avgTagDist > 3.5) {
                 rejectPose = true;
                 rejectionReason = "Average distance to tag too high " + observation.avgTagDist;
             }
