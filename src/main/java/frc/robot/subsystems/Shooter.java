@@ -70,9 +70,9 @@ public class Shooter extends SubsystemBase {
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 52.0, 58.0, 70.0, 100.0)); // with hood
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 52.0, 61.0, 70.0, 100.0)); // with hood
 //    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0)); //no hood
-    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.15, 0.16, 0.13, 0.6, 0.85)); // five wire servo
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.15, 0.16, 0.11, 0.6, 0.85)); // five wire servo
 //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7)); // three wire servo
 //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0)); // no hood
     public int currentPreset = 0;

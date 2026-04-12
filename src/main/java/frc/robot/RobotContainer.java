@@ -251,12 +251,12 @@ public class RobotContainer {
         manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter));
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.8), shooter)
+        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(1), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.5), shooter));
         manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter));
 
-        manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(-0.8), shooter)
+        manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(-1), shooter)
                 .andThen(() -> shooter.setTransferMotor(-0.5), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(-intake.intakeSpeed), intake)));
         manipulatorController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(0), intake)));
@@ -457,8 +457,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(1)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("stopShooter", new InstantCommand(() -> shooter.setFlywheelSpeedPercent(0)).andThen(() -> shooter.setShooterModeStopped()));
-        NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(80), shooter).andThen(() -> shooter.setTransferMotor(50)));
-        NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-80), shooter).andThen(() -> shooter.setTransferMotor(-50)));
+        NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(50)));
+        NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-1), shooter).andThen(() -> shooter.setTransferMotor(-50)));
         NamedCommands.registerCommand("stopInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(0), shooter).andThen(() -> shooter.setTransferMotor(0)));
 
     }
