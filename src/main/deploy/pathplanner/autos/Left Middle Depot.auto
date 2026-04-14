@@ -5,15 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "shootMedium"
+            "pathName": "LeftMiddleStart Depot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftMiddleStart Backup"
+            "pathName": "Left Middle Shoot"
           }
         },
         {
@@ -25,43 +25,31 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 6.0
+            "waitTime": 1.5
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "stopInjectorAndTransfer"
+            "name": "retractIntake"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "runInjectorAndTransfer"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stopInjectorAndTransfer"
+            "waitTime": 9.0
           }
         },
         {
           "type": "named",
           "data": {
             "name": "stopShooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopInjectorAndTransfer"
           }
         }
       ]

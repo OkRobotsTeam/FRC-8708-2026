@@ -3,35 +3,52 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.0,
-        "y": 2.0
+        "x": 3.622508858965274,
+        "y": 1.73
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.0,
-        "y": 2.0
+        "x": 1.1068855421686745,
+        "y": 1.562126506024097
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RightRampStart"
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.05
+        "x": 0.34194578313253,
+        "y": 0.88
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.05
+        "x": 2.0061718639262938,
+        "y": 0.8327537207654144
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "outpost"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.75,
+      "rotationDegrees": -90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "extendIntake",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "extendIntake"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -42,13 +59,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

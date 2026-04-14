@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.622508858965274,
-        "y": 3.05
+        "x": 0.34194578313253,
+        "y": 0.88
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.256109561282095,
-        "y": 2.9857169606952336
+        "x": 0.9539457831325302,
+        "y": 0.88
       },
       "isLocked": false,
-      "linkedName": "RightMiddleStart"
+      "linkedName": "outpost"
     },
     {
       "anchor": {
@@ -20,21 +20,37 @@
         "y": 2.3
       },
       "prevControl": {
-        "x": 2.599658877511823,
-        "y": 2.4504537557880117
+        "x": 2.017530120481928,
+        "y": 1.9830963855421677
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "RightMiddleShoot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.2331950207468869,
+      "rotationDegrees": -90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "shootMedium",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "shootMedium"
+        }
+      }
+    },
+    {
       "name": "reverseInjectorAndTransfer",
-      "waypointRelativePos": 0.2928039702233292,
+      "waypointRelativePos": 0.5459057071960313,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -60,7 +76,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

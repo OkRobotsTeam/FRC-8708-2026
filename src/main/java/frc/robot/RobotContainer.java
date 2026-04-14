@@ -236,8 +236,8 @@ public class RobotContainer {
 
         manipulatorController.rightBumper().onTrue(Commands.runOnce(intake::toggleIntake, intake));
 
-        manipulatorController.rightTrigger().onTrue(Commands.runOnce(intake::run, intake));
-        manipulatorController.rightTrigger().onFalse(Commands.runOnce(intake::stop, intake));
+        manipulatorController.rightTrigger().onTrue(Commands.runOnce(intake::run, intake).andThen(Commands.runOnce(() -> shooter.setInjectorMotor(-0.2))));
+        manipulatorController.rightTrigger().onFalse(Commands.runOnce(intake::stop, intake).andThen(Commands.runOnce(() -> shooter.setInjectorMotor(0.0))));
 
         manipulatorController.leftTrigger().onTrue(Commands.runOnce(intake::runBackwards, intake));
         manipulatorController.leftTrigger().onFalse(Commands.runOnce(intake::stop, intake));
@@ -449,8 +449,8 @@ public class RobotContainer {
                 new Pose2d(robotState.getEstimatedPose().getTranslation(),
                         DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(DriverStation.Alliance.Red) ? Rotation2d.k180deg: Rotation2d.kZero )
         ))));
-        NamedCommands.registerCommand("runIntake", new InstantCommand(intake::run, intake));
-        NamedCommands.registerCommand("stopIntake", new InstantCommand(intake::stop, intake));
+        NamedCommands.registerCommand("runIntake", new InstantCommand(intake::run, intake).andThen(new InstantCommand(() -> shooter.setInjectorMotor(-0.2))));
+        NamedCommands.registerCommand("stopIntake", new InstantCommand(intake::stop, intake).andThen(new InstantCommand(() -> shooter.setInjectorMotor(0))));
         NamedCommands.registerCommand("extendIntake", new InstantCommand(() -> intake.extendIntake()));
         NamedCommands.registerCommand("retractIntake", new InstantCommand(() -> intake.retractIntake()));
         NamedCommands.registerCommand("shootClose", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));

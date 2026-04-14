@@ -5,15 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "shootMedium"
+            "pathName": "LeftMiddleStart Depot and Outpost"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftMiddleStart Backup"
+            "pathName": "Left Middle Shoot"
           }
         },
         {
@@ -25,7 +25,25 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 6.0
+            "waitTime": 1.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "retractIntake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShooter"
           }
         },
         {
@@ -35,9 +53,21 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "LeftMiddleShoot Outpost"
+          }
+        },
+        {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 0.4
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost RightMiddleShoot"
           }
         },
         {
@@ -49,7 +79,19 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
+            "waitTime": 1.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "retractIntake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
           }
         },
         {
