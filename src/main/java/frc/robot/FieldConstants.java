@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.List;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -49,5 +50,7 @@ public class FieldConstants {
             new Translation2d(0, FIELD_WIDTH.in(Meters)),
             new Translation2d(1.5, FIELD_WIDTH.in(Meters)),
             new Translation2d(1.5, 0));
+
+    public static final double[] SHIFT_CHANGE_TIMES = new double[]{10.0, 40.0, 70.0, };
 
 }

@@ -31,6 +31,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -58,6 +59,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.FeetPerSecond;
+import static frc.robot.FieldConstants.SHIFT_CHANGE_TIMES;
 
 import frc.robot.subsystems.Shooter;
 
@@ -98,6 +100,9 @@ public class RobotContainer {
     public static Field2d currentPoseField = new Field2d();
 
     private final Trigger inAllianceRegionTrigger;
+
+    private boolean activeShift;
+    private double teleopStartTime;
 
 
     /**
@@ -229,8 +234,6 @@ public class RobotContainer {
 
 
 
-        manipulatorController.start().onTrue(Commands.runOnce(()-> shooter.setHoodPosition(0.2), shooter));
-
         manipulatorController.y().onTrue(Commands.runOnce(shooter::angleUp, shooter));
         manipulatorController.b().onTrue(Commands.runOnce(shooter::angleDown, shooter));
 
@@ -252,12 +255,12 @@ public class RobotContainer {
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
 
         manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(1), shooter)
-                .andThen(() -> shooter.setTransferMotor(0.5), shooter));
+                .andThen(() -> shooter.setTransferMotor(0.3), shooter));
         manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter));
 
         manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(-1), shooter)
-                .andThen(() -> shooter.setTransferMotor(-0.5), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(-intake.intakeSpeed), intake)));
+                .andThen(() -> shooter.setTransferMotor(-0.3), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(-intake.intakeSpeed), intake)));
         manipulatorController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(0), intake)));
 
@@ -453,12 +456,13 @@ public class RobotContainer {
         NamedCommands.registerCommand("stopIntake", new InstantCommand(intake::stop, intake).andThen(new InstantCommand(() -> shooter.setInjectorMotor(0))));
         NamedCommands.registerCommand("extendIntake", new InstantCommand(() -> intake.extendIntake()));
         NamedCommands.registerCommand("retractIntake", new InstantCommand(() -> intake.retractIntake()));
-        NamedCommands.registerCommand("shootClose", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(1)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootClose", new InstantCommand(() -> shooter.selectPreset(1)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(3)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootCorner", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("stopShooter", new InstantCommand(() -> shooter.setFlywheelSpeedPercent(0)).andThen(() -> shooter.setShooterModeStopped()));
-        NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(50)));
-        NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-1), shooter).andThen(() -> shooter.setTransferMotor(-50)));
+        NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(0.3)));
+        NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-1), shooter).andThen(() -> shooter.setTransferMotor(-0.3)));
         NamedCommands.registerCommand("stopInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(0), shooter).andThen(() -> shooter.setTransferMotor(0)));
 
     }
@@ -468,6 +472,7 @@ public class RobotContainer {
     }
 
     public void teleopInit() {
+        double teleopStartTime = Timer.getFPGATimestamp();
         drive.setSpeedMultiplier(1);
         intake.stop();
         shooter.setShooterModeStopped();
@@ -491,6 +496,41 @@ public class RobotContainer {
         SmartDashboard.putString("Shooter Preset", shooter.currentPreset + "");
         SmartDashboard.putBoolean(" Preset", Math.abs(shooter.motorSpeed - shooter.flywheelMotor1.getVelocity().getValueAsDouble()) < 10);
 
+        boolean isOurShift;
+        double timeLeftInShift = 0.0;
+        double timeSinceTeleopStart = Timer.getFPGATimestamp() - teleopStartTime;
+
+        if (DriverStation.getAlliance().isPresent()) {
+            DriverStation.Alliance alliance = DriverStation.getAlliance().get();
+
+            // 1. Get Game Data ('R' or 'B' for alliance whose goal goes inactive first)
+            String gameData = DriverStation.getGameSpecificMessage();
+            if  (!gameData.isEmpty()) {
+                // Get the first character "R" or "B" of the first shift
+                char firstCharOfFirstColor = gameData.charAt(0);
+                char firstCharOfOurColor = (alliance == DriverStation.Alliance.Blue) ? 'B' : 'R';
+
+                // Set whether we were active during the first shift
+                // This boolean gets inverted for every shift time we pass
+                isOurShift = firstCharOfFirstColor == firstCharOfOurColor;
+
+                // Flip for every shift we've already passed
+                for (double time : SHIFT_CHANGE_TIMES) {
+                    if (timeSinceTeleopStart >= time) {
+                        isOurShift = !isOurShift;
+                    } else {
+                        // First future shift -> compute time left
+                        timeLeftInShift = time - timeSinceTeleopStart;
+                        break;
+                    }
+                }
+
+                SmartDashboard.putBoolean("Active", isOurShift);
+                SmartDashboard.putNumber("Remaining Shift Time", timeLeftInShift);
+                SmartDashboard.putNumber("Time Elapsed from Teleop Start", timeSinceTeleopStart);
+                SmartDashboard.putString("Game Data", gameData);
+            }
+        }
     }
 
     public void teleopPeriodic() {
