@@ -134,13 +134,13 @@
       }
     },
     {
-      "name": "shootFar",
-      "waypointRelativePos": 2.3362357669122558,
+      "name": "shootCorner",
+      "waypointRelativePos": 1.802481389578163,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "shootFar"
+          "name": "shootCorner"
         }
       }
     },

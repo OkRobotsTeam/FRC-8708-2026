@@ -176,10 +176,10 @@ public final class Constants {
 
         // Pathing constants for teleop
         public static final List<Pose2d> AUTO_ALIGN_TARGET_POSES = List.of(
-                new Pose2d(15.365, 1.14, Rotation2d.fromDegrees(-39)), //Red Left Corner
-                new Pose2d(15.365, 6.93, Rotation2d.fromDegrees(51)), //Red right Corner
-                new Pose2d(1.175, 1.14, Rotation2d.fromDegrees(180+51)), //Blue Right Corner
-                new Pose2d(1.175, 6.93, Rotation2d.fromDegrees(180-51)), //Blue left Corner
+//                new Pose2d(15.365, 1.14, Rotation2d.fromDegrees(-39)), //Red Left Corner
+//                new Pose2d(15.365, 6.93, Rotation2d.fromDegrees(51)), //Red right Corner
+//                new Pose2d(1.175, 1.14, Rotation2d.fromDegrees(180+51)), //Blue Right Corner
+//                new Pose2d(1.175, 6.93, Rotation2d.fromDegrees(180-51)), //Blue left Corner
                 new Pose2d(13.8, 4.025, Rotation2d.fromDegrees(0)), //Red middle
                 new Pose2d(12.8, 0.75, Rotation2d.fromDegrees(-76)), //Red left
                 new Pose2d(12.8, 7.35, Rotation2d.fromDegrees(76)), //Red right

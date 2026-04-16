@@ -23,6 +23,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "RightMiddle Shoot"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "runInjectorAndTransfer"
@@ -68,6 +74,12 @@
           "type": "path",
           "data": {
             "pathName": "LeftCorner Shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
           }
         },
         {

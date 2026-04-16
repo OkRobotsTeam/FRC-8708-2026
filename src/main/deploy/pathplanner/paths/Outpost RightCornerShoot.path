@@ -38,13 +38,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "shootFar",
+      "name": "shootCorner",
       "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "shootFar"
+          "name": "shootCorner"
         }
       }
     },
