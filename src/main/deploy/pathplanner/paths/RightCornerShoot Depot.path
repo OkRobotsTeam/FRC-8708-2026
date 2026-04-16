@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.175,
-        "y": 1.14
+        "x": 1.617,
+        "y": 2.405
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.996208362863218,
-        "y": 1.7626789510985112
+        "x": 2.438208362863218,
+        "y": 3.027678951098511
       },
       "isLocked": false,
       "linkedName": "RightCornerShoot"
@@ -64,12 +64,12 @@
     },
     {
       "anchor": {
-        "x": 1.175,
-        "y": 6.93
+        "x": 1.617,
+        "y": 5.645
       },
       "prevControl": {
-        "x": 1.0270592124968891,
-        "y": 7.131527971738316
+        "x": 1.469059212496889,
+        "y": 5.846527971738316
       },
       "nextControl": null,
       "isLocked": false,
@@ -78,8 +78,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.34745762711864486,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 0.29661016949152785,
+      "rotationDegrees": 100.0
     },
     {
       "waypointRelativePos": 1.5381355932203449,
@@ -134,13 +134,13 @@
       }
     },
     {
-      "name": "shootCorner",
+      "name": "shootFar",
       "waypointRelativePos": 2.3362357669122558,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "shootCorner"
+          "name": "shootFar"
         }
       }
     },
@@ -166,13 +166,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 141.0
+    "rotation": 149.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -140.0
+    "rotation": -149.0
   },
   "useDefaultConstraints": true
 }

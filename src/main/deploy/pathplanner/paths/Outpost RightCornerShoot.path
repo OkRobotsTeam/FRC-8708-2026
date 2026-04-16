@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.175,
-        "y": 1.14
+        "x": 1.617,
+        "y": 2.405
       },
       "prevControl": {
-        "x": 0.9998582565556347,
-        "y": 0.9398866052445078
+        "x": 1.4418582565556346,
+        "y": 2.204886605244508
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,13 +38,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "shootCornerActual",
+      "name": "shootFar",
       "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "shootMedium"
+          "name": "shootFar"
         }
       }
     },
@@ -70,7 +70,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -140.0
+    "rotation": -149.0
   },
   "reversed": false,
   "folder": null,
