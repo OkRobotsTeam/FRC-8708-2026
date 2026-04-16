@@ -51,6 +51,6 @@ public class FieldConstants {
             new Translation2d(1.5, FIELD_WIDTH.in(Meters)),
             new Translation2d(1.5, 0));
 
-    public static final double[] SHIFT_CHANGE_TIMES = new double[]{10.0, 40.0, 70.0, };
+    public static final double[] SHIFT_CHANGE_TIMES = new double[]{10.0, 35.0, 60.0, 85.0, 110.0};
 
 }

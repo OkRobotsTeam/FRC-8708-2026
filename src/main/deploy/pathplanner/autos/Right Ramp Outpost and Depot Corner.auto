@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftMiddleStart Depot and Outpost"
+            "pathName": "RightMiddleStart Outpost"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.4
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Middle Shoot"
+            "pathName": "Outpost RightCornerShoot"
           }
         },
         {
@@ -55,19 +61,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftMiddleShoot Outpost"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.4
+            "pathName": "RightCornerShoot Depot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Outpost RightCornerShoot"
+            "pathName": "LeftCorner Shoot"
           }
         },
         {
@@ -91,7 +91,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 5.0
+            "waitTime": 2.5
           }
         },
         {

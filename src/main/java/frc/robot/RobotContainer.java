@@ -460,6 +460,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(3)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootCorner", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootCornerActual", new InstantCommand(() -> shooter.selectPreset(4)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("stopShooter", new InstantCommand(() -> shooter.setFlywheelSpeedPercent(0)).andThen(() -> shooter.setShooterModeStopped()));
         NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(0.3)));
         NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-1), shooter).andThen(() -> shooter.setTransferMotor(-0.3)));
@@ -472,7 +473,7 @@ public class RobotContainer {
     }
 
     public void teleopInit() {
-        double teleopStartTime = Timer.getFPGATimestamp();
+        teleopStartTime = Timer.getFPGATimestamp();
         drive.setSpeedMultiplier(1);
         intake.stop();
         shooter.setShooterModeStopped();
@@ -495,7 +496,9 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shooter Angle", (int) (shooter.hoodPosition * 100));
         SmartDashboard.putString("Shooter Preset", shooter.currentPreset + "");
         SmartDashboard.putBoolean(" Preset", Math.abs(shooter.motorSpeed - shooter.flywheelMotor1.getVelocity().getValueAsDouble()) < 10);
+    }
 
+    public void teleopPeriodic() {
         boolean isOurShift;
         double timeLeftInShift = 0.0;
         double timeSinceTeleopStart = Timer.getFPGATimestamp() - teleopStartTime;
@@ -505,6 +508,7 @@ public class RobotContainer {
 
             // 1. Get Game Data ('R' or 'B' for alliance whose goal goes inactive first)
             String gameData = DriverStation.getGameSpecificMessage();
+//            gameData = "R";
             if  (!gameData.isEmpty()) {
                 // Get the first character "R" or "B" of the first shift
                 char firstCharOfFirstColor = gameData.charAt(0);
@@ -514,26 +518,31 @@ public class RobotContainer {
                 // This boolean gets inverted for every shift time we pass
                 isOurShift = firstCharOfFirstColor == firstCharOfOurColor;
 
-                // Flip for every shift we've already passed
-                for (double time : SHIFT_CHANGE_TIMES) {
-                    if (timeSinceTeleopStart >= time) {
-                        isOurShift = !isOurShift;
-                    } else {
-                        // First future shift -> compute time left
-                        timeLeftInShift = time - timeSinceTeleopStart;
-                        break;
+                if (timeSinceTeleopStart <= 10.0) {
+                    isOurShift = true;
+                    timeLeftInShift = (10.0 - timeSinceTeleopStart);
+                } else if (timeSinceTeleopStart >= 110.0) {
+                    isOurShift = true;
+                    timeLeftInShift = (140.0 - timeSinceTeleopStart);
+                } else {
+                    // Flip for every shift we've already passed
+                    for (double time : SHIFT_CHANGE_TIMES) {
+                        if (timeSinceTeleopStart >= time) {
+                            isOurShift = !isOurShift;
+                        } else {
+                            // First future shift -> compute time left
+                            timeLeftInShift = time - timeSinceTeleopStart;
+                            break;
+                        }
                     }
                 }
 
                 SmartDashboard.putBoolean("Active", isOurShift);
-                SmartDashboard.putNumber("Remaining Shift Time", timeLeftInShift);
-                SmartDashboard.putNumber("Time Elapsed from Teleop Start", timeSinceTeleopStart);
+                SmartDashboard.putNumber("Remaining Shift Time", Math.round(timeLeftInShift * 10.0) / 10.0);
+//                SmartDashboard.putNumber("Time Elapsed from Teleop Start", Math.round(timeSinceTeleopStart * 10.0) / 10.0));
                 SmartDashboard.putString("Game Data", gameData);
             }
         }
-    }
-
-    public void teleopPeriodic() {
     }
 
     public void testPeriodic() {

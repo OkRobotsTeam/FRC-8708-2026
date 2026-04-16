@@ -61,19 +61,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftMiddleShoot Depot"
+            "pathName": "RightMiddleShoot Depot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Middle Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left Middle Shoot"
+            "pathName": "LeftCorner Shoot"
           }
         },
         {

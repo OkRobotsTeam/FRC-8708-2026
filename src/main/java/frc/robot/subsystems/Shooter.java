@@ -70,9 +70,9 @@ public class Shooter extends SubsystemBase {
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(45.0, 52.0, 61.0, 70.0, 100.0)); // with hood
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(68.0, 45.0, 52.0, 60.0, 70.0, 70.0, 100.0)); // with hood
 //    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0)); //no hood
-    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.15, 0.16, 0.11, 0.6, 0.85)); // five wire servo
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.23, 0.15, 0.16, 0.11, 0.23, 0.6, 0.85)); // five wire servo
 //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7)); // three wire servo
 //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0)); // no hood
     public int currentPreset = 0;
@@ -224,14 +224,14 @@ public class Shooter extends SubsystemBase {
     }
 
     public void nextPreset() {
-        currentPreset = MathUtil.clamp(currentPreset + 1, 0, shooterSpeeds.size() - 1);
+        currentPreset = MathUtil.clamp(currentPreset + 1, 1, shooterSpeeds.size() - 1);
         setManualSpeed(shooterSpeeds.get(currentPreset));
 //        setHoodPosition(hoodPositions.get(currentPreset));
         System.out.println("Next Preset");
     }
 
     public void previousPreset() {
-        currentPreset = MathUtil.clamp(currentPreset - 1, 0, shooterSpeeds.size() - 1);
+        currentPreset = MathUtil.clamp(currentPreset - 1, 1, shooterSpeeds.size() - 1);
         setManualSpeed(shooterSpeeds.get(currentPreset));
 //        setHoodPosition(hoodPositions.get(currentPreset));
         System.out.println("Previous Preset");
@@ -428,7 +428,10 @@ public class Shooter extends SubsystemBase {
         // This method will be called once per scheduler run
 
         Translation2d shootingPosition = calculateShootingPosition();
-        Logger.recordOutput("Shooter/shootingPosition", shootingPosition);
+//        Logger.recordOutput("Shooter/shootingPosition", shootingPosition);
+        Logger.recordOutput("Shooter/ActualFlywheelMotor1Speed", flywheelMotor1.getVelocity().getValueAsDouble());
+        Logger.recordOutput("Shooter/ActualFlywheelMotor2Speed", flywheelMotor2.getVelocity().getValueAsDouble());
+
 
 //        if (isShooting) {
 //            if (injector.getSupplyCurrent().getValueAsDouble() > 30.0) {

@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 2.4,
-        "y": 2.3
+        "x": 1.175,
+        "y": 1.14
       },
       "prevControl": {
-        "x": 2.2248582565556347,
-        "y": 2.0998866052445075
+        "x": 0.9998582565556347,
+        "y": 0.9398866052445078
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightMiddleShoot"
+      "linkedName": "RightCornerShoot"
     }
   ],
   "rotationTargets": [
@@ -38,7 +38,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "shootMedium",
+      "name": "shootCornerActual",
       "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
@@ -70,7 +70,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -143.0
+    "rotation": -140.0
   },
   "reversed": false,
   "folder": null,
