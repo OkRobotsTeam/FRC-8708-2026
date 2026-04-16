@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.LoggedTuneablePID;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Subsystem to control two TalonFX motors independently (or optionally make the
@@ -206,6 +207,9 @@ public class Intake extends SubsystemBase {
                 case FORWARDS -> runSpeed(intakeSpeed);
                 case BACKWARDS -> runSpeed(-intakeSpeed);
         }
+
+        Logger.recordOutput("Intake/Extender Speed", intakeExtender.getVelocity().getValueAsDouble());
+        Logger.recordOutput("Intake/Motor Speed", intakeMotor.getVelocity().getValueAsDouble());
 
 
 

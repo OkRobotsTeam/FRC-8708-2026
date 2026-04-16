@@ -432,6 +432,9 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/ActualFlywheelMotor1Speed", flywheelMotor1.getVelocity().getValueAsDouble());
         Logger.recordOutput("Shooter/ActualFlywheelMotor2Speed", flywheelMotor2.getVelocity().getValueAsDouble());
 
+        Logger.recordOutput("Shooter/Flywheel Motor Difference", flywheelMotor1.getVelocity().getValueAsDouble() - flywheelMotor2.getVelocity().getValueAsDouble());
+        Logger.recordOutput("Shooter/Injector Motor Speed" , injector.getVelocity().getValueAsDouble());
+        Logger.recordOutput("Shooter/Floor Speed", transfer.getVelocity().getValueAsDouble());
 
 //        if (isShooting) {
 //            if (injector.getSupplyCurrent().getValueAsDouble() > 30.0) {
