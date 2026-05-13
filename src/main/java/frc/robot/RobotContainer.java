@@ -254,8 +254,8 @@ public class RobotContainer {
         manipulatorController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter));
         manipulatorController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
 
-        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(1), shooter)
-                .andThen(() -> shooter.setTransferMotor(0.3), shooter));
+        manipulatorController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(1.0), shooter)
+                .andThen(() -> shooter.setTransferMotor(1.0), shooter));
         manipulatorController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
                 .andThen(() -> shooter.setTransferMotor(0.0), shooter));
 

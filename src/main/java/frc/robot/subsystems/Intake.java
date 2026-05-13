@@ -214,7 +214,7 @@ public class Intake extends SubsystemBase {
 
 
 //        System.out.println("Position: " +  encoder.getDistance() / 2048 + " PID Target: " + positionPID.getSetpoint() + " PID Output: " + pidOutput);
-
+//        System.out.println("Encoder Position: " +  encoder.getDistance());
     }
 
     @Override

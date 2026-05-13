@@ -11,6 +11,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
@@ -70,12 +72,30 @@ public class Shooter extends SubsystemBase {
 
     private long timer = 0;
 
-    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 45.0, 52.0, 62.0, 55.0, 100.0)); // with hood
-//    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0)); //no hood
-    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.3, 0.15, 0.16, 0.11, 0.6, 0.85)); // five wire servo
-//    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7)); // three wire servo
-//    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0)); // no hood
+    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 45.0, 52.0, 49.0, 55.0, 100.0)); // with hood
+    //    public ArrayList<Double> shooterSpeeds = new ArrayList<Double>(List.of(49.0, 55.0, 70.0)); //no hood
+    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.3, 0.15, 0.16, 0.3, 0.6, 0.85)); // five wire servo
+    //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.35, 0.32, 0.33, 0.7)); // three wire servo
+    //    public ArrayList<Double> hoodPositions = new ArrayList<Double>(List.of(0.0, 0.0, 0.0)); // no hood
     public int currentPreset = 0;
+
+    private static final InterpolatingDoubleTreeMap flywheelSpeedMap = new InterpolatingDoubleTreeMap();
+    private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
+
+    static{
+        flywheelSpeedMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(0).getTranslation()
+                .getDistance(FieldConstants.RED_GOAL_POSITION), 45.0);
+        flywheelSpeedMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(1).getTranslation()
+                .getDistance(FieldConstants.RED_GOAL_POSITION), 52.0);
+
+
+        hoodAngleMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(0).getTranslation()
+                .getDistance(FieldConstants.RED_GOAL_POSITION), 0.15);
+        hoodAngleMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(1).getTranslation()
+                .getDistance(FieldConstants.RED_GOAL_POSITION), 0.16);
+
+    }
+
 
 
     public Shooter() {
@@ -354,26 +374,26 @@ public class Shooter extends SubsystemBase {
     public Translation2d calculateShootingPosition () {
         Pose2d currentPose = robotState.getEstimatedPose();
         if (DriverStation.getAlliance().equals(Optional.of(DriverStation.Alliance.Blue))) {
-                if (! inBlueAllianceZone(currentPose)) {
-                    if (inBlueLeftHalf(currentPose)) {
-                        return FieldConstants.BLUE_LEFT_AIM_POSITION;
-                    } else {
-                        return FieldConstants.BLUE_RIGHT_AIM_POSITION;
-                    }
-                } else {
+                if (inBlueAllianceZone(currentPose)) {
+//                    if (inBlueLeftHalf(currentPose)) {
+//                        return FieldConstants.BLUE_LEFT_AIM_POSITION;
+//                    } else {
+//                        return FieldConstants.BLUE_RIGHT_AIM_POSITION;
+//                    }
                     return  FieldConstants.BLUE_GOAL_POSITION;
+
                 }
             } else {
-                if (!inRedAllianceZone(currentPose)) {
-                    if (inRedLeftHalf(currentPose)) {
-                        return FieldConstants.RED_LEFT_AIM_POSITION;
-                    } else {
-                        return FieldConstants.RED_RIGHT_AIM_POSITION;
-                    }
-                } else {
+                if (inRedAllianceZone(currentPose)) {
+//                    if (inRedLeftHalf(currentPose)) {
+//                        return FieldConstants.RED_LEFT_AIM_POSITION;
+//                    } else {
+//                        return FieldConstants.RED_RIGHT_AIM_POSITION;
+//                    }
                     return FieldConstants.RED_GOAL_POSITION;
                 }
             }
+        return null;
     }
 
     public boolean inRedAllianceZone(Pose2d currentPose) {
