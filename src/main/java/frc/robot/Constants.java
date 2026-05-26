@@ -137,6 +137,8 @@ public final class Constants {
         public static final int MAXIMUM_ANGULAR_ROTATIONS = 10; //TODO UPDATE
         public static final double SPEED_TOLERANCE = 5; //TODO UPDATE
         public static final double SPEED_WHEN_OUTSIDE_ZONE = 100;
+        public static final int AUTOMATIC_PRESET_INDEX = 4;
+        //TODO: SET INDEX
     }
 
 

@@ -460,7 +460,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("shootMedium", new InstantCommand(() -> shooter.selectPreset(2)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootFar", new InstantCommand(() -> shooter.selectPreset(3)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("shootCorner", new InstantCommand(() -> shooter.selectPreset(0)).andThen(() -> shooter.setShooterModeShooting()));
-        NamedCommands.registerCommand("shootCornerActual", new InstantCommand(() -> shooter.selectPreset(4)).andThen(() -> shooter.setShooterModeShooting()));
+        NamedCommands.registerCommand("shootCornerActual", new InstantCommand(() -> shooter.selectPreset(5)).andThen(() -> shooter.setShooterModeShooting()));
         NamedCommands.registerCommand("stopShooter", new InstantCommand(() -> shooter.setFlywheelSpeedPercent(0)).andThen(() -> shooter.setShooterModeStopped()));
         NamedCommands.registerCommand("runInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(1), shooter).andThen(() -> shooter.setTransferMotor(0.3)));
         NamedCommands.registerCommand("reverseInjectorAndTransfer", new InstantCommand(() -> shooter.setInjectorMotor(-1), shooter).andThen(() -> shooter.setTransferMotor(-0.3)));
@@ -495,7 +495,7 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shooter Speed", (int) shooter.manualSpeed);
         SmartDashboard.putNumber("Shooter Angle", (int) (shooter.hoodPosition * 100));
         SmartDashboard.putString("Shooter Preset", shooter.currentPreset + "");
-        SmartDashboard.putBoolean(" Preset", Math.abs(shooter.motorSpeed - shooter.flywheelMotor1.getVelocity().getValueAsDouble()) < 10);
+        SmartDashboard.putBoolean("Spun Up", shooter.isSpunUp(10));
     }
 
     public void teleopPeriodic() {
