@@ -26,7 +26,6 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.lib.io.servo.ServoIO;
 
 import java.util.List;
 
@@ -138,7 +137,24 @@ public final class Constants {
         public static final double SPEED_TOLERANCE = 5; //TODO UPDATE
         public static final double SPEED_WHEN_OUTSIDE_ZONE = 100;
         public static final int AUTOMATIC_PRESET_INDEX = 4;
-        //TODO: SET INDEX
+        public static final double CLOSEST_DISTANCE = 1.5;
+        public static final double INTERPOLATE_DISTANCE_1 = 1.78;
+        public static final double INTERPOLATE_DISTANCE_2 = 2.0;
+        public static final double INTERPOLATE_DISTANCE_3 = 3.0;
+        public static final double INTERPOLATE_DISTANCE_4 = 4.0;
+        public static final double FARTHEST_DISTANCE = 5.34;
+        public static final double CLOSEST_SPEED = 44;
+        public static final double INTERPOLATE_SPEED_1 = 45;
+        public static final double INTERPOLATE_SPEED_2 = 46;
+        public static final double INTERPOLATE_SPEED_3 = 51;
+        public static final double INTERPOLATE_SPEED_4 = 57;
+        public static final double FARTHEST_SPEED = 60;
+        public static final double CLOSEST_HOOD_ANGLE = 0.0;
+        public static final double INTERPOLATE_HOOD_ANGLE_1 = 0.15;
+        public static final double INTERPOLATE_HOOD_ANGLE_2 = 0.16;
+        public static final double INTERPOLATE_HOOD_ANGLE_3 = 0.19;
+        public static final double INTERPOLATE_HOOD_ANGLE_4 = 0.25;
+        public static final double FARTHEST_HOOD_ANGLE = 0.3;
     }
 
 
@@ -179,9 +195,9 @@ public final class Constants {
         // Pathing constants for teleop
         public static final List<Pose2d> AUTO_ALIGN_TARGET_POSES = List.of(
                 new Pose2d(13.8, 4.025, Rotation2d.fromDegrees(0)), //Red middle
+                new Pose2d(14.15, 5.75, Rotation2d.fromDegrees(37)), //Red middle left
                 new Pose2d(12.8, 0.75, Rotation2d.fromDegrees(-76)), //Red left
                 new Pose2d(12.8, 7.35, Rotation2d.fromDegrees(76)), //Red right
-                new Pose2d(14.15, 5.75, Rotation2d.fromDegrees(37)), //Red middle left
                 new Pose2d(14.15, 2.3, Rotation2d.fromDegrees(-37)), //Red middle right
                 new Pose2d(2.74, 4.025, Rotation2d.fromDegrees(180)), //Blue middle
                 new Pose2d(3.74, 0.75, Rotation2d.fromDegrees(-104)), //Blue right

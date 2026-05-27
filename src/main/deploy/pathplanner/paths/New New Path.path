@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.74,
-        "y": 4.025
+        "x": 3.146832034018427,
+        "y": 4.102494684620836
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.74,
-        "y": 4.025
+        "x": 4.612430900070873,
+        "y": 4.0253579021970225
       },
       "isLocked": false,
       "linkedName": "CenterShoot"

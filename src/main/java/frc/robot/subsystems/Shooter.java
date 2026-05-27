@@ -49,9 +49,6 @@ public class Shooter extends SubsystemBase {
     private final DutyCycleOut dutyCycleOut = new DutyCycleOut(0);
 
     boolean isShooting = false;
-    public boolean idleWhenNotShooting;
-    public boolean autoSpeedMode = false;
-    public boolean autoHoodAngle;
     public double motorSpeed = 0;
     public double manualSpeed = 45;
     private double automaticSpeed = 0.0;
@@ -75,14 +72,27 @@ public class Shooter extends SubsystemBase {
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
 
     static {
-        for (int i = 1; i < 4; i++) {
-            flywheelSpeedMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(i).getTranslation()
-                    .getDistance(FieldConstants.RED_GOAL_POSITION), shooterSpeeds.get(i));
+//        for (int i = 1; i < 4; i++) {
+//            flywheelSpeedMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(i-1).getTranslation()
+//                    .getDistance(FieldConstants.RED_GOAL_POSITION), shooterSpeeds.get(i));
+//
+//            hoodAngleMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(i-1).getTranslation()
+//                    .getDistance(FieldConstants.RED_GOAL_POSITION), hoodPositions.get(i));
+//
+//        }
+        flywheelSpeedMap.put(ShooterConstants.CLOSEST_DISTANCE, ShooterConstants.CLOSEST_SPEED);
+        flywheelSpeedMap.put(ShooterConstants.INTERPOLATE_DISTANCE_1, ShooterConstants.INTERPOLATE_SPEED_1);
+        flywheelSpeedMap.put(ShooterConstants.INTERPOLATE_DISTANCE_2, ShooterConstants.INTERPOLATE_SPEED_2);
+        flywheelSpeedMap.put(ShooterConstants.INTERPOLATE_DISTANCE_3, ShooterConstants.INTERPOLATE_SPEED_3);
+        flywheelSpeedMap.put(ShooterConstants.INTERPOLATE_DISTANCE_4, ShooterConstants.INTERPOLATE_SPEED_4);
+        flywheelSpeedMap.put(ShooterConstants.FARTHEST_DISTANCE, ShooterConstants.FARTHEST_SPEED);
 
-            hoodAngleMap.put(Constants.PathConstants.AUTO_ALIGN_TARGET_POSES.get(i).getTranslation()
-                    .getDistance(FieldConstants.RED_GOAL_POSITION), hoodPositions.get(i));
-
-        }
+        hoodAngleMap.put(ShooterConstants.CLOSEST_DISTANCE, ShooterConstants.CLOSEST_HOOD_ANGLE);
+        hoodAngleMap.put(ShooterConstants.INTERPOLATE_DISTANCE_1, ShooterConstants.INTERPOLATE_HOOD_ANGLE_1);
+        hoodAngleMap.put(ShooterConstants.INTERPOLATE_DISTANCE_2, ShooterConstants.INTERPOLATE_HOOD_ANGLE_2);
+        hoodAngleMap.put(ShooterConstants.INTERPOLATE_DISTANCE_3, ShooterConstants.INTERPOLATE_HOOD_ANGLE_3);
+        hoodAngleMap.put(ShooterConstants.INTERPOLATE_DISTANCE_4, ShooterConstants.INTERPOLATE_HOOD_ANGLE_4);
+        hoodAngleMap.put(ShooterConstants.FARTHEST_DISTANCE, ShooterConstants.FARTHEST_HOOD_ANGLE);
     }
 
 
@@ -233,6 +243,8 @@ public class Shooter extends SubsystemBase {
 
         automaticHoodPosition = hoodAngleMap.get(distance);
         setHoodPosition(automaticHoodPosition);
+
+        Logger.recordOutput("Shooter/Automatic Hood Angle",  automaticHoodPosition);
 
 //        automaticHoodPosition = MathUtil.clamp(distance * 20, 0, 100);
         return automaticHoodPosition;
