@@ -203,6 +203,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+//        configureButtonBindingsSingleController();
 
         GamePieceVisualizer algae = new GamePieceVisualizer("Algae",
                 new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
@@ -376,6 +377,103 @@ public class RobotContainer {
 
 
         // Right bumper: Shoot on the Move
+
+        inAllianceRegionTrigger.onTrue(
+                Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
+                        .ignoringDisable(true));
+        inAllianceRegionTrigger.onFalse(
+                Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
+                        .ignoringDisable(true));
+    }
+
+
+    private void configureButtonBindingsSingleController() {
+        // Default command, normal field-relative drive
+        drive.setDefaultCommand(
+                DriveCommands.joystickDriveCommand(
+                        drive,
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()));
+
+
+//
+//        manipulatorController.y().onTrue(Commands.runOnce(shooter::angleUp, shooter));
+//        manipulatorController.b().onTrue(Commands.runOnce(shooter::angleDown, shooter));
+
+        driverController.rightBumper().onTrue(Commands.runOnce(intake::toggleIntake, intake));
+
+        driverController.rightTrigger().onTrue(Commands.runOnce(intake::run, intake).andThen(Commands.runOnce(() -> shooter.setInjectorMotor(-0.2))));
+        driverController.rightTrigger().onFalse(Commands.runOnce(intake::stop, intake).andThen(Commands.runOnce(() -> shooter.setInjectorMotor(0.0))));
+
+        driverController.leftTrigger().onTrue(Commands.runOnce(intake::runBackwards, intake));
+        driverController.leftTrigger().onFalse(Commands.runOnce(intake::stop, intake));
+
+        driverController.povUp().onTrue(Commands.runOnce(shooter::faster, shooter));
+        driverController.povDown().onTrue(Commands.runOnce(shooter::slower, shooter));
+
+        driverController.povRight().onTrue(Commands.runOnce(shooter::nextPreset, shooter));
+        driverController.povLeft().onTrue(Commands.runOnce(shooter::previousPreset, shooter));
+
+        driverController.x().onTrue(Commands.runOnce(() -> shooter.setShooterModeShooting(), shooter));
+        driverController.x().onFalse(Commands.runOnce(() -> shooter.setShooterModeStopped(), shooter));
+
+        driverController.a().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(0.9), shooter)
+                .andThen(() -> shooter.setTransferMotor(1.0), shooter));
+        driverController.a().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
+                .andThen(() -> shooter.setTransferMotor(0.0), shooter));
+
+//        manipulatorController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setInjectorMotor(-0.9), shooter)
+//                .andThen(() -> shooter.setTransferMotor(-0.3), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(-intake.intakeSpeed), intake)));
+//        manipulatorController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setInjectorMotor(0.0), shooter)
+//                .andThen(() -> shooter.setTransferMotor(0.0), shooter).andThen(Commands.runOnce(() -> intake.setIntakeSpeed(0), intake)));
+
+
+        driverController.leftBumper().whileTrue(
+                new RotateToPose(
+                        drive,
+                        () -> shooter.calculateShootingPosition(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getLeftY()
+                )
+        );
+
+        driverController
+                .b()
+                .onTrue(
+                        Commands.runOnce(
+                                        () -> robotState.resetPose(
+                                                new Pose2d(robotState.getEstimatedPose().getTranslation(),
+                                                        DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(DriverStation.Alliance.Red) ? Rotation2d.k180deg: Rotation2d.kZero )
+                                        ))
+                                .ignoringDisable(true));
+
+
+        // While X is held, take over control from the driver and
+        // navigate to the closest pose to the robots current pose
+        // from a predefined list of AUTO_ALIGN_TARGET_POSES
+        driverController.x().whileTrue(
+                new DriveToPose(
+                        drive,
+                        () -> robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))
+                        .withTolerance(Inches.of(3), Degrees.of(0.5)).andThen(() -> Logger.recordOutput("/test", robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))));
+
+
+        LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
+        SmartDashboard.putData("Shoot Ball", Commands
+                .runOnce(() -> BallSimulator.launch(FeetPerSecond.of(ballVel.getAsDouble()))));
+
+        GamePieceVisualizer algaeViz =
+                new GamePieceVisualizer("Algae #1", new Pose3d(1, 1, 1, new Rotation3d()));
+        SmartDashboard.putData("Hide Algae", Commands.runOnce(() -> algaeViz.hide()));
+
+        LoggedTuneableProfiledPID linearController =
+                new LoggedTuneableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 0, 3.0);
+
+        SmartDashboard.putData("DriveToPose Command",
+                new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
+                        .withTolerance(Inches.of(3), Degrees.of(5)));
+
 
         inAllianceRegionTrigger.onTrue(
                 Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))

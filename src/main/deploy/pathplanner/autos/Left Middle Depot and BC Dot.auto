@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftRampStart Depot and Outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Middle Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runInjectorAndTransfer"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "retractIntake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopInjectorAndTransfer"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Middle Shoot LeftTrenchWait"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftTrecnhWait BCDot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left BCDot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

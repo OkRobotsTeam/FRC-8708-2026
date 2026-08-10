@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightMiddleStart Outpost"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.4
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost RightCornerShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runInjectorAndTransfer"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "retractIntake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopInjectorAndTransfer"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightCornerShoot RightTrenchWait"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightTrenchWait BC Dot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightBC Dot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
