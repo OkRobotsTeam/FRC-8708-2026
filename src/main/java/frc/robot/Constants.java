@@ -175,8 +175,8 @@ public final class Constants {
         public static final double WIGGLE_OUT_POSITION = 400;
         public static final double INTAKE_ROTATION_GEAR_RATIO = 19.42;
         public static final double WIGGLE_ROTATIONS = 1;
-        public static final int ENCODER_CHANNEL_A = 1;
-        public static final int ENCODER_CHANNEL_B = 2;
+        public static final int ENCODER_CHANNEL_A = 3;
+        public static final int ENCODER_CHANNEL_B = 4;
         public static final boolean ENCODER_REVERSED = false;
         public static final CounterBase.EncodingType ENCODER_ENCODING_TYPE = Encoder.EncodingType.k4X;
     }
