@@ -149,11 +149,11 @@ public class RobotContainer {
         speedChooser.addOption("25%", 0.25);
         speedChooser.addOption("10%", 0.1);
         speedChooser.addOption("5%", 0.05);
-        //speedChooser.onChange(() -> drive.setSpeedMultiplier(speedChooser.), drive);
+//        speedChooser.onChange(() -> drive.setSpeedMultiplier(speedChooser.), drive);
 //        if (speedChooser.get() != null) {
 //            drive.setSpeedMultiplier(speedChooser.get());
 //        } else {
-            drive.setSpeedMultiplier(1);
+//            drive.setSpeedMultiplier(1);
 //        }
         conditionalChooser = new LoggedDashboardChooser<>("Conditional Choice");
         conditionalChooser.addOption("True", true);
@@ -229,9 +229,9 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDriveCommand(
                         drive,
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
-                        () -> -driverController.getRightX()));
+                        () -> -driverController.getLeftY() * speedChooser.get(),
+                        () -> -driverController.getLeftX() * speedChooser.get(),
+                        () -> -driverController.getRightX() * speedChooser.get()));
 
 
 
@@ -392,9 +392,9 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDriveCommand(
                         drive,
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
-                        () -> -driverController.getRightX()));
+                        () -> -driverController.getLeftY() * speedChooser.get(),
+                        () -> -driverController.getLeftX() * speedChooser.get(),
+                        () -> -driverController.getRightX() * speedChooser.get()));
 
 
 //
@@ -452,11 +452,11 @@ public class RobotContainer {
         // While X is held, take over control from the driver and
         // navigate to the closest pose to the robots current pose
         // from a predefined list of AUTO_ALIGN_TARGET_POSES
-        driverController.x().whileTrue(
-                new DriveToPose(
-                        drive,
-                        () -> robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))
-                        .withTolerance(Inches.of(3), Degrees.of(0.5)).andThen(() -> Logger.recordOutput("/test", robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))));
+//        driverController.x().whileTrue(
+//                new DriveToPose(
+//                        drive,
+//                        () -> robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))
+//                        .withTolerance(Inches.of(3), Degrees.of(0.5)).andThen(() -> Logger.recordOutput("/test", robotState.getEstimatedPose().nearest(PathConstants.AUTO_ALIGN_TARGET_POSES))));
 
 
         LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
